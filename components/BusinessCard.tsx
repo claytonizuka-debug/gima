@@ -1,5 +1,11 @@
-import { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
 type BusinessCardProps = {
   name: string;
@@ -11,14 +17,37 @@ type BusinessCardProps = {
 export function BusinessCard({ name, description, image, onPress }: BusinessCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
+  const placeholderOpacity = useRef(new Animated.Value(1)).current;
+  const imageOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (imageLoaded) {
+      Animated.parallel([
+        Animated.timing(placeholderOpacity, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(imageOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [imageLoaded, placeholderOpacity, imageOpacity]);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <View style={styles.imageWrapper}>
-        {!imageLoaded && <View style={styles.imagePlaceholder} />}
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.imagePlaceholder, { opacity: placeholderOpacity }]}
+        />
 
-        <Image
+        <Animated.Image
           source={{ uri: image }}
-          style={styles.thumbnail}
+          style={[styles.thumbnail, { opacity: imageOpacity }]}
           onLoad={() => setImageLoaded(true)}
         />
       </View>

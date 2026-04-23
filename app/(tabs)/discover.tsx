@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BusinessCard } from '@/components/BusinessCard';
+import { SkeletonCard } from '@/components/SkeletonCard';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function DiscoverScreen() {
@@ -54,7 +55,7 @@ export default function DiscoverScreen() {
 
       <View style={styles.section}>
         {loading ? (
-          <Text style={styles.helperText}>Loading businesses...</Text>
+          Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)
         ) : filteredBusinesses.length > 0 ? (
           filteredBusinesses.map((business) => (
             <BusinessCard
@@ -138,10 +139,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 18,
-  },
-  helperText: {
-    fontSize: 16,
-    color: '#77776f',
   },
   emptyState: {
     backgroundColor: '#ffffff',

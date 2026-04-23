@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BusinessCard } from '@/components/BusinessCard';
+import { SkeletonCard } from '@/components/SkeletonCard';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
@@ -41,7 +42,7 @@ export default function SavedScreen() {
 
       <View style={styles.section}>
         {loading ? (
-          <Text style={styles.helperText}>Loading saved businesses...</Text>
+          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
         ) : savedBusinesses.length > 0 ? (
           savedBusinesses.map((business) => (
             <BusinessCard
@@ -114,10 +115,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 18,
-  },
-  helperText: {
-    fontSize: 16,
-    color: '#77776f',
   },
   emptyState: {
     backgroundColor: '#ffffff',
