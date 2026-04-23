@@ -2,14 +2,22 @@ import { useLocalSearchParams } from 'expo-router';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
-import { businesses } from '@/data/businesses';
+import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function BusinessDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-
-  const business = businesses.find((item) => item.slug === slug);
-
   const { toggleSaved, isSaved } = useSavedBusinesses();
+  const { businesses, loading } = useBusinesses();
+
+  const business = businesses.find((item) => item.slug === slug) || null;
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading business...</Text>
+      </View>
+    );
+  }
 
   if (!business) {
     return (
@@ -26,10 +34,7 @@ export default function BusinessDetailScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Image
-        source={{ uri: business.image }}
-        style={styles.image}
-      />
+      <Image source={{ uri: business.image }} style={styles.image} />
 
       <View style={styles.topRow}>
         <Text style={styles.category}>{business.category}</Text>
@@ -62,6 +67,17 @@ export default function BusinessDetailScreen() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: 'gray',
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',

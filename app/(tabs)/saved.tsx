@@ -3,11 +3,12 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BusinessCard } from '@/components/BusinessCard';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
-import { businesses } from '@/data/businesses';
+import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function SavedScreen() {
   const router = useRouter();
   const { savedSlugs } = useSavedBusinesses();
+  const { businesses, loading } = useBusinesses();
 
   const savedBusinesses = businesses.filter((business) =>
     savedSlugs.includes(business.slug)
@@ -19,7 +20,9 @@ export default function SavedScreen() {
       <Text style={styles.subtitle}>Your saved places in Saipan.</Text>
 
       <View style={styles.section}>
-        {savedBusinesses.length > 0 ? (
+        {loading ? (
+          <Text style={styles.emptyText}>Loading saved businesses...</Text>
+        ) : savedBusinesses.length > 0 ? (
           savedBusinesses.map((business) => (
             <BusinessCard
               key={business.slug}

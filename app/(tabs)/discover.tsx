@@ -1,31 +1,14 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { BusinessCard } from '@/components/BusinessCard';
-import { getBusinesses, type Business } from '../../services/businessService';
+import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [loading, setLoading] = useState(true);
-
   const router = useRouter();
-
-  useEffect(() => {
-    async function loadBusinesses() {
-      try {
-        const data = await getBusinesses();
-        setBusinesses(data);
-      } catch (error) {
-        console.error('Error loading businesses:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadBusinesses();
-  }, []);
+  const { businesses, loading } = useBusinesses();
 
   const filteredBusinesses = businesses.filter((business) => {
     const query = searchQuery.toLowerCase();
