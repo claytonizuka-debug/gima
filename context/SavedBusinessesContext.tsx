@@ -1,41 +1,87 @@
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 
-// This defines what data and functions our context will provide
+import {
+    getSavedBusinessSlugs,
+    saveBusinessForUser,
+    unsaveBusinessForUser,
+} from '../services/savedBusinessService';
+import { useAuth } from './AuthContext';
+
 type SavedBusinessesContextType = {
   savedSlugs: string[];
-  toggleSaved: (slug: string) => void;
+  toggleSaved: (slug: string) => Promise<void>;
   isSaved: (slug: string) => boolean;
+  loading: boolean;
 };
 
-// Create the context
 const SavedBusinessesContext = createContext<SavedBusinessesContextType | undefined>(undefined);
 
-// Provider component that wraps the app and shares saved business state
 export function SavedBusinessesProvider({ children }: { children: ReactNode }) {
+  const { user, loading: authLoading } = useAuth();
+
   const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Add or remove a business slug from the saved list
-  const toggleSaved = (slug: string) => {
-    setSavedSlugs((current) =>
-      current.includes(slug)
-        ? current.filter((item) => item !== slug)
-        : [...current, slug]
-    );
-  };
+  useEffect(() => {
+    async function loadSavedBusinesses() {
+      if (authLoading) {
+        return;
+      }
 
-  // Returns true if a business is already saved
-  const isSaved = (slug: string) => {
+      if (!user) {
+        setSavedSlugs([]);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const slugs = await getSavedBusinessSlugs(user.uid);
+        setSavedSlugs(slugs);
+      } catch (error) {
+        console.error('Error loading saved businesses:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    setLoading(true);
+    loadSavedBusinesses();
+  }, [user, authLoading]);
+
+  async function toggleSaved(slug: string) {
+    if (!user) {
+      console.warn('Must be logged in to save businesses');
+      return;
+    }
+
+    const alreadySaved = savedSlugs.includes(slug);
+
+    try {
+      if (alreadySaved) {
+        await unsaveBusinessForUser(user.uid, slug);
+        setSavedSlugs((current) => current.filter((item) => item !== slug));
+      } else {
+        await saveBusinessForUser(user.uid, slug);
+        setSavedSlugs((current) => [...current, slug]);
+      }
+    } catch (error) {
+      console.error('Error toggling saved business:', error);
+    }
+  }
+
+  function isSaved(slug: string) {
     return savedSlugs.includes(slug);
-  };
+  }
 
   return (
-    <SavedBusinessesContext.Provider value={{ savedSlugs, toggleSaved, isSaved }}>
+    <SavedBusinessesContext.Provider
+      value={{ savedSlugs, toggleSaved, isSaved, loading }}
+    >
       {children}
     </SavedBusinessesContext.Provider>
   );
 }
 
-// Custom hook so other files can use the context easily
 export function useSavedBusinesses() {
   const context = useContext(SavedBusinessesContext);
 

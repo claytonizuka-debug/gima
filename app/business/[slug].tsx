@@ -1,12 +1,14 @@
-import { useLocalSearchParams } from 'expo-router';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useAuth } from '@/context/AuthContext';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function BusinessDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
-  const { toggleSaved, isSaved } = useSavedBusinesses();
+  const { user } = useAuth();
+  const { toggleSaved, isSaved, loading: savedLoading } = useSavedBusinesses();
   const { businesses, loading } = useBusinesses();
 
   const business = businesses.find((item) => item.slug === slug) || null;
@@ -32,6 +34,22 @@ export default function BusinessDetailScreen() {
 
   const saved = isSaved(business.slug);
 
+  async function handleSavePress() {
+    if (!user) {
+      Alert.alert(
+        'Login required',
+        'Please log in or create an account to save businesses.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Go to Login', onPress: () => router.push('/auth') },
+        ]
+      );
+      return;
+    }
+
+    await toggleSaved(business.slug);
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Image source={{ uri: business.image }} style={styles.image} />
@@ -46,7 +64,8 @@ export default function BusinessDetailScreen() {
 
       <Pressable
         style={[styles.saveButton, saved && styles.savedButton]}
-        onPress={() => toggleSaved(business.slug)}
+        onPress={handleSavePress}
+        disabled={savedLoading}
       >
         <Text style={[styles.saveButtonText, saved && styles.savedButtonText]}>
           {saved ? 'Saved' : 'Save Business'}

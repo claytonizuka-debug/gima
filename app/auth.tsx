@@ -1,19 +1,26 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
 import { logIn, signUp } from '../services/authService';
 
 export default function AuthScreen() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const [isLoginMode, setIsLoginMode] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  if (user) {
-    router.replace('/');
+  // ✅ FIX: Move navigation into useEffect
+  useEffect(() => {
+    if (user) {
+      router.replace('/');
+    }
+  }, [user]);
+
+  // Optional: prevent flicker while auth state loads
+  if (loading) {
     return null;
   }
 
