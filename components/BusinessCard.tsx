@@ -9,8 +9,10 @@ type BusinessCardProps = {
 
 export function BusinessCard({ name, description, image, onPress }: BusinessCardProps) {
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress}>
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <Image source={{ uri: image }} style={styles.thumbnail} />
+
+      <View style={styles.overlay} />
 
       <View style={styles.textContainer}>
         <Text style={styles.businessName}>{name}</Text>
@@ -22,25 +24,35 @@ export function BusinessCard({ name, description, image, onPress }: BusinessCard
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#ececec',
   },
   thumbnail: {
     width: '100%',
-    height: 140,
+    height: 170,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    top: 90,
+    backgroundColor: 'rgba(0,0,0,0.08)',
   },
   textContainer: {
-    padding: 14,
+    padding: 16,
+    backgroundColor: '#ffffff',
   },
   businessName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 6,
   },
   description: {
     fontSize: 14,
-    color: '#555',
+    color: '#666',
+    lineHeight: 20,
   },
 });

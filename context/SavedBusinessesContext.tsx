@@ -9,7 +9,7 @@ import { useAuth } from './AuthContext';
 
 type SavedBusinessesContextType = {
   savedSlugs: string[];
-  toggleSaved: (slug: string) => Promise<void>;
+  toggleSaved: (slug: string) => Promise<void>; // ✅ FIX HERE
   isSaved: (slug: string) => boolean;
   loading: boolean;
 };

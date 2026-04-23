@@ -22,22 +22,39 @@ export default function DiscoverScreen() {
   });
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Discover</Text>
-      <Text style={styles.subtitle}>
-        Browse more businesses across Saipan.
-      </Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>DISCOVER</Text>
+        <Text style={styles.title}>Explore Saipan</Text>
+        <Text style={styles.subtitle}>
+          Search restaurants, gyms, and other local spots across the island.
+        </Text>
+      </View>
 
       <TextInput
         style={styles.searchInput}
         placeholder="Search businesses, categories, or locations"
+        placeholderTextColor="#8a8a83"
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
 
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsTitle}>Results</Text>
+        {!loading && (
+          <Text style={styles.resultsCount}>
+            {filteredBusinesses.length} found
+          </Text>
+        )}
+      </View>
+
       <View style={styles.section}>
         {loading ? (
-          <Text style={styles.noResults}>Loading businesses...</Text>
+          <Text style={styles.helperText}>Loading businesses...</Text>
         ) : filteredBusinesses.length > 0 ? (
           filteredBusinesses.map((business) => (
             <BusinessCard
@@ -49,7 +66,12 @@ export default function DiscoverScreen() {
             />
           ))
         ) : (
-          <Text style={styles.noResults}>No businesses found.</Text>
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyTitle}>No matches found</Text>
+            <Text style={styles.emptyText}>
+              Try a different keyword, business type, or location.
+            </Text>
+          </View>
         )}
       </View>
     </ScrollView>
@@ -59,34 +81,84 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#f7f7f4',
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 36,
+  },
+  hero: {
+    marginTop: 28,
+    marginBottom: 22,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#6b6b63',
+    marginBottom: 8,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginTop: 40,
-    marginBottom: 8,
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#111',
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: 'gray',
-    marginBottom: 20,
+    lineHeight: 24,
+    color: '#5f5f58',
   },
   searchInput: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     fontSize: 16,
-    marginBottom: 20,
+    color: '#111',
+    marginBottom: 18,
+    borderWidth: 1,
+    borderColor: '#ececec',
+  },
+  resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  resultsTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111',
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: '#77776f',
   },
   section: {
-    marginTop: 10,
+    marginBottom: 18,
   },
-  noResults: {
+  helperText: {
     fontSize: 16,
-    color: 'gray',
-    marginTop: 10,
+    color: '#77776f',
+  },
+  emptyState: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#ececec',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#666',
   },
 });

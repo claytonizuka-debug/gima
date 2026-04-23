@@ -17,12 +17,24 @@ export default function HomeScreen() {
   );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Gima</Text>
-      <Text style={styles.subtitle}>What’s happening in Saipan</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.hero}>
+        <Text style={styles.eyebrow}>SAIPAN LOCAL GUIDE</Text>
+        <Text style={styles.title}>Gima</Text>
+        <Text style={styles.subtitle}>
+          Discover what’s open, what’s happening today, and the places worth checking out.
+        </Text>
+      </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Open Now</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Open Now</Text>
+          <Text style={styles.sectionCaption}>Live local picks</Text>
+        </View>
 
         {loading ? (
           <Text style={styles.helperText}>Loading businesses...</Text>
@@ -42,7 +54,10 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Happening Today</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Happening Today</Text>
+          <Text style={styles.sectionCaption}>Fresh activity</Text>
+        </View>
 
         {loading ? null : happeningTodayBusinesses.length > 0 ? (
           happeningTodayBusinesses.map((business) => (
@@ -65,29 +80,55 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    backgroundColor: '#f7f7f4',
+  },
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 28,
+    paddingBottom: 36,
+  },
+  hero: {
+    marginTop: 28,
+    marginBottom: 28,
+  },
+  eyebrow: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#6b6b63',
+    marginBottom: 8,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    marginTop: 40,
+    fontSize: 40,
+    fontWeight: '800',
+    color: '#111',
+    marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: 'gray',
-    marginBottom: 20,
+    lineHeight: 24,
+    color: '#5f5f58',
+    maxWidth: '95%',
   },
   section: {
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom: 18,
+  },
+  sectionHeader: {
+    marginBottom: 14,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 10,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 4,
+  },
+  sectionCaption: {
+    fontSize: 14,
+    color: '#77776f',
   },
   helperText: {
     fontSize: 16,
-    color: 'gray',
+    color: '#77776f',
   },
 });

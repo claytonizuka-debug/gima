@@ -6,7 +6,9 @@ import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function BusinessDetailScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const params = useLocalSearchParams();
+  const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+
   const { user } = useAuth();
   const { toggleSaved, isSaved, loading: savedLoading } = useSavedBusinesses();
   const { businesses, loading } = useBusinesses();
@@ -32,7 +34,8 @@ export default function BusinessDetailScreen() {
     );
   }
 
-  const saved = isSaved(business.slug);
+  const businessSlug = business.slug;
+  const saved = isSaved(businessSlug);
 
   async function handleSavePress() {
     if (!user) {
@@ -47,7 +50,7 @@ export default function BusinessDetailScreen() {
       return;
     }
 
-    await toggleSaved(business.slug);
+    await toggleSaved(businessSlug);
   }
 
   return (

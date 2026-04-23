@@ -2,7 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
+import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
+
 export default function TabLayout() {
+  const { savedSlugs } = useSavedBusinesses();
+
   return (
     <Tabs
       screenOptions={{
@@ -35,6 +39,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bookmark" size={size} color={color} />
           ),
+          tabBarBadge: savedSlugs.length > 0 ? savedSlugs.length : undefined,
         }}
       />
       <Tabs.Screen
