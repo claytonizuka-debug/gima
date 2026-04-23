@@ -8,6 +8,9 @@ export function useBusinesses() {
   useEffect(() => {
     async function loadBusinesses() {
       try {
+        // ⬇️ TEMP: add artificial delay
+        //await new Promise((resolve) => setTimeout(resolve, 1500));
+
         const data = await getBusinesses();
         setBusinesses(data);
       } catch (error) {

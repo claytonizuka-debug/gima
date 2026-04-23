@@ -1,9 +1,18 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import {
+    Alert,
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { getBusinessBySlug, type Business } from '../../services/businessService';
 
 export default function BusinessDetailScreen() {
   const params = useLocalSearchParams();
@@ -11,9 +20,31 @@ export default function BusinessDetailScreen() {
 
   const { user } = useAuth();
   const { toggleSaved, isSaved, loading: savedLoading } = useSavedBusinesses();
-  const { businesses, loading } = useBusinesses();
 
-  const business = businesses.find((item) => item.slug === slug) || null;
+  const [business, setBusiness] = useState<Business | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadBusiness() {
+      if (!slug) {
+        setBusiness(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getBusinessBySlug(slug);
+        setBusiness(data);
+      } catch (error) {
+        console.error('Error loading business:', error);
+        setBusiness(null);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadBusiness();
+  }, [slug]);
 
   if (loading) {
     return (
@@ -25,9 +56,9 @@ export default function BusinessDetailScreen() {
 
   if (!business) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Business not found</Text>
-        <Text style={styles.description}>
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyTitle}>Business not found</Text>
+        <Text style={styles.emptyText}>
           We could not find information for this business.
         </Text>
       </View>
@@ -54,16 +85,24 @@ export default function BusinessDetailScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      showsVerticalScrollIndicator={false}
+    >
       <Image source={{ uri: business.image }} style={styles.image} />
 
-      <View style={styles.topRow}>
-        <Text style={styles.category}>{business.category}</Text>
-        <Text style={styles.status}>{business.status}</Text>
-      </View>
+      <View style={styles.headerBlock}>
+        <View style={styles.metaRow}>
+          <Text style={styles.category}>{business.category}</Text>
+          <View style={styles.statusPill}>
+            <Text style={styles.statusText}>{business.status}</Text>
+          </View>
+        </View>
 
-      <Text style={styles.title}>{business.name}</Text>
-      <Text style={styles.description}>{business.description}</Text>
+        <Text style={styles.title}>{business.name}</Text>
+        <Text style={styles.description}>{business.description}</Text>
+      </View>
 
       <Pressable
         style={[styles.saveButton, saved && styles.savedButton]}
@@ -75,14 +114,18 @@ export default function BusinessDetailScreen() {
         </Text>
       </Pressable>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>Hours</Text>
-        <Text style={styles.infoText}>{business.hours}</Text>
-      </View>
+      <View style={styles.infoSection}>
+        <Text style={styles.sectionTitle}>Business Info</Text>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.infoLabel}>Location</Text>
-        <Text style={styles.infoText}>{business.location}</Text>
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>Hours</Text>
+          <Text style={styles.infoText}>{business.hours}</Text>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.infoLabel}>Location</Text>
+          <Text style={styles.infoText}>{business.location}</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -91,95 +134,135 @@ export default function BusinessDetailScreen() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f7f4',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   loadingText: {
     fontSize: 16,
-    color: 'gray',
+    color: '#77776f',
+  },
+  emptyContainer: {
+    flex: 1,
+    backgroundColor: '#f7f7f4',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  emptyTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#111',
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#666',
+    textAlign: 'center',
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f7f4',
   },
-  content: {
-    padding: 20,
-    paddingTop: 30,
+  contentContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 28,
     paddingBottom: 40,
   },
   image: {
-    height: 220,
     width: '100%',
-    borderRadius: 16,
+    height: 260,
+    borderRadius: 24,
+    marginBottom: 22,
+  },
+  headerBlock: {
     marginBottom: 20,
   },
-  topRow: {
+  metaRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
   },
   category: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    color: '#6b6b63',
     textTransform: 'uppercase',
   },
-  status: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0a7',
-    backgroundColor: '#e7f8f2',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+  statusPill: {
+    backgroundColor: '#e9f7ef',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 999,
   },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#198754',
+  },
   title: {
-    fontSize: 30,
-    fontWeight: 'bold',
+    fontSize: 34,
+    fontWeight: '800',
+    color: '#111',
     marginBottom: 12,
   },
   description: {
     fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
-    marginBottom: 20,
+    lineHeight: 25,
+    color: '#5f5f58',
   },
   saveButton: {
     backgroundColor: '#111',
-    paddingVertical: 14,
-    borderRadius: 12,
+    paddingVertical: 15,
+    borderRadius: 16,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   savedButton: {
-    backgroundColor: '#e7f8f2',
+    backgroundColor: '#e9f7ef',
+    borderWidth: 1,
+    borderColor: '#cfead8',
   },
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   savedButtonText: {
-    color: '#0a7',
+    color: '#198754',
+  },
+  infoSection: {
+    marginTop: 4,
+  },
+  sectionTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111',
+    marginBottom: 14,
   },
   infoCard: {
-    backgroundColor: '#f2f2f2',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#ececec',
   },
   infoLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1,
     textTransform: 'uppercase',
+    color: '#6b6b63',
+    marginBottom: 8,
   },
   infoText: {
     fontSize: 16,
+    lineHeight: 24,
     color: '#111',
   },
 });

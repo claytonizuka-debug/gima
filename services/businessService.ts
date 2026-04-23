@@ -1,4 +1,4 @@
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
 export type Business = {
@@ -17,4 +17,15 @@ export type Business = {
 export async function getBusinesses(): Promise<Business[]> {
   const snapshot = await getDocs(collection(db, 'businesses'));
   return snapshot.docs.map((doc) => doc.data() as Business);
+}
+
+export async function getBusinessBySlug(slug: string): Promise<Business | null> {
+  const docRef = doc(db, 'businesses', slug);
+  const snapshot = await getDoc(docRef);
+
+  if (!snapshot.exists()) {
+    return null;
+  }
+
+  return snapshot.data() as Business;
 }

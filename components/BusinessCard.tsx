@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type BusinessCardProps = {
@@ -8,11 +9,19 @@ type BusinessCardProps = {
 };
 
 export function BusinessCard({ name, description, image, onPress }: BusinessCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      <Image source={{ uri: image }} style={styles.thumbnail} />
+      <View style={styles.imageWrapper}>
+        {!imageLoaded && <View style={styles.imagePlaceholder} />}
 
-      <View style={styles.overlay} />
+        <Image
+          source={{ uri: image }}
+          style={styles.thumbnail}
+          onLoad={() => setImageLoaded(true)}
+        />
+      </View>
 
       <View style={styles.textContainer}>
         <Text style={styles.businessName}>{name}</Text>
@@ -31,14 +40,18 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ececec',
   },
+  imageWrapper: {
+    width: '100%',
+    height: 170,
+    backgroundColor: '#f1f1f1',
+  },
+  imagePlaceholder: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#e5e5e5',
+  },
   thumbnail: {
     width: '100%',
     height: 170,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    top: 90,
-    backgroundColor: 'rgba(0,0,0,0.08)',
   },
   textContainer: {
     padding: 16,
