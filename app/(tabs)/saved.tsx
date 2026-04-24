@@ -3,19 +3,20 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { BusinessCard } from '@/components/BusinessCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
+import { GimaColors } from '@/constants/gimaTheme';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function SavedScreen() {
   const router = useRouter();
+  const { businesses, loading } = useBusinesses();
   const { savedSlugs, loading: savedLoading } = useSavedBusinesses();
-  const { businesses, loading: businessesLoading } = useBusinesses();
 
-  const loading = savedLoading || businessesLoading;
-
-  const savedBusinesses = businesses.filter((business) =>
+  const savedList = businesses.filter((business) =>
     savedSlugs.includes(business.slug)
   );
+
+  const isLoading = loading || savedLoading;
 
   return (
     <ScrollView
@@ -24,27 +25,31 @@ export default function SavedScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>YOUR LIST</Text>
-        <Text style={styles.title}>Saved Places</Text>
+        <Text style={styles.eyebrow}>SAVED</Text>
+        <Text style={styles.title}>Your Places</Text>
         <Text style={styles.subtitle}>
-          Keep track of the spots you want to revisit across Saipan.
+          Keep track of businesses you want to visit again.
         </Text>
       </View>
 
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsTitle}>Saved</Text>
-        {!loading && (
-          <Text style={styles.resultsCount}>
-            {savedBusinesses.length} saved
-          </Text>
+        <View>
+          <Text style={styles.resultsTitle}>Saved</Text>
+          <Text style={styles.resultsCaption}>Your personal list</Text>
+        </View>
+
+        {!isLoading && (
+          <View style={styles.countPill}>
+            <Text style={styles.countPillText}>{savedList.length}</Text>
+          </View>
         )}
       </View>
 
       <View style={styles.section}>
-        {loading ? (
+        {isLoading ? (
           Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
-        ) : savedBusinesses.length > 0 ? (
-          savedBusinesses.map((business) => (
+        ) : savedList.length > 0 ? (
+          savedList.map((business) => (
             <BusinessCard
               key={business.slug}
               name={business.name}
@@ -57,7 +62,7 @@ export default function SavedScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No saved places yet</Text>
             <Text style={styles.emptyText}>
-              Save a business to build your personal island shortlist.
+              Save businesses to quickly find them later.
             </Text>
           </View>
         )}
@@ -69,7 +74,7 @@ export default function SavedScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -84,19 +89,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#6b6b63',
-    marginBottom: 8,
+    color: GimaColors.mutedText,
+    marginBottom: 6,
   },
   title: {
     fontSize: 36,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 10,
+    fontWeight: '900',
+    color: GimaColors.ocean,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
+    color: GimaColors.mutedText,
     lineHeight: 24,
-    color: '#5f5f58',
   },
   resultsHeader: {
     flexDirection: 'row',
@@ -106,32 +111,46 @@ const styles = StyleSheet.create({
   },
   resultsTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#111',
+    fontWeight: '800',
+    color: GimaColors.ocean,
   },
-  resultsCount: {
-    fontSize: 14,
-    color: '#77776f',
+  resultsCaption: {
+    fontSize: 13,
+    color: GimaColors.mutedText,
+    marginTop: 2,
+  },
+  countPill: {
+    backgroundColor: GimaColors.card,
+    borderWidth: 1,
+    borderColor: GimaColors.coral,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  countPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: GimaColors.text,
   },
   section: {
     marginBottom: 18,
   },
   emptyState: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: GimaColors.card,
+    borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontWeight: '800',
+    color: GimaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: GimaColors.mutedText,
   },
 });

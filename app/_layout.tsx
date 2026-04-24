@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'react-native';
 
+import { GimaColors } from '@/constants/gimaTheme';
 import { AuthProvider } from '@/context/AuthContext';
 import { SavedBusinessesProvider } from '@/context/SavedBusinessesContext';
 
@@ -12,26 +13,43 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SavedBusinessesProvider>
-        <StatusBar barStyle="dark-content" backgroundColor="#f7f7f4" />
+        <StatusBar barStyle="dark-content" backgroundColor={GimaColors.background} />
 
-        <Stack>
+        <Stack
+          screenOptions={{
+            headerBackTitle: '',
+            headerTintColor: GimaColors.ocean,
+            headerShadowVisible: false,
+            headerStyle: {
+              backgroundColor: GimaColors.background,
+            },
+          }}
+        >
           <Stack.Screen
             name="(tabs)"
-            options={{ headerShown: false }}
+            options={{
+              headerShown: false,
+              title: '',
+            }}
           />
+
           <Stack.Screen
             name="business/[slug]"
             options={{
               headerShown: true,
+              title: '',
+              headerTitle: '',
+              headerBackTitle: '',
               headerBackVisible: true,
-              title: 'Business',
               animation: 'slide_from_right',
             }}
           />
+
           <Stack.Screen
             name="auth"
             options={{
               headerShown: false,
+              title: '',
             }}
           />
         </Stack>

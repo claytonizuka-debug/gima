@@ -4,8 +4,10 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
+
+import { GimaColors } from '@/constants/gimaTheme';
 
 type BusinessCardProps = {
   name: string;
@@ -35,25 +37,25 @@ export function BusinessCard({ name, description, image, onPress }: BusinessCard
         }),
       ]).start();
     }
-  }, [imageLoaded, placeholderOpacity, imageOpacity]);
+  }, [imageLoaded]);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       <View style={styles.imageWrapper}>
         <Animated.View
           pointerEvents="none"
-          style={[styles.imagePlaceholder, { opacity: placeholderOpacity }]}
+          style={[styles.placeholder, { opacity: placeholderOpacity }]}
         />
 
         <Animated.Image
           source={{ uri: image }}
-          style={[styles.thumbnail, { opacity: imageOpacity }]}
+          style={[styles.image, { opacity: imageOpacity }]}
           onLoad={() => setImageLoaded(true)}
         />
       </View>
 
       <View style={styles.textContainer}>
-        <Text style={styles.businessName}>{name}</Text>
+        <Text style={styles.name}>{name}</Text>
         <Text style={styles.description}>{description}</Text>
       </View>
     </TouchableOpacity>
@@ -62,39 +64,37 @@ export function BusinessCard({ name, description, image, onPress }: BusinessCard
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    marginBottom: 16,
+    backgroundColor: GimaColors.card,
+    borderRadius: 16,
+    marginBottom: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
   },
   imageWrapper: {
     width: '100%',
     height: 170,
-    backgroundColor: '#f1f1f1',
+    backgroundColor: '#eaeaea',
   },
-  imagePlaceholder: {
+  placeholder: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#e5e5e5',
+    backgroundColor: '#eaeaea',
   },
-  thumbnail: {
+  image: {
     width: '100%',
     height: 170,
   },
   textContainer: {
-    padding: 16,
-    backgroundColor: '#ffffff',
+    padding: 14,
   },
-  businessName: {
-    fontSize: 18,
+  name: {
+    fontSize: 17,
     fontWeight: '700',
-    color: '#111',
-    marginBottom: 6,
+    color: GimaColors.text,
+    marginBottom: 4,
   },
   description: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    color: GimaColors.mutedText,
   },
 });

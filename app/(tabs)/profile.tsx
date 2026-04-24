@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { logOut } from '../../services/authService';
@@ -27,36 +28,42 @@ export default function ProfileScreen() {
         <Text style={styles.eyebrow}>ACCOUNT</Text>
         <Text style={styles.title}>Profile</Text>
         <Text style={styles.subtitle}>
-          Manage your account and keep track of your activity in Gima.
+          Manage your Gima account and keep track of your island activity.
         </Text>
       </View>
 
       <View style={styles.card}>
         {user ? (
           <>
-            <Text style={styles.sectionLabel}>Signed in as</Text>
+            <Text style={styles.label}>Signed in as</Text>
             <Text style={styles.email}>{user.email}</Text>
 
-            <View style={styles.statRow}>
-              <Text style={styles.statLabel}>Saved places</Text>
-              <Text style={styles.statValue}>{savedSlugs.length}</Text>
+            <View style={styles.statCard}>
+              <View>
+                <Text style={styles.statLabel}>Saved places</Text>
+                <Text style={styles.statHint}>Your personal island list</Text>
+              </View>
+
+              <View style={styles.countPill}>
+                <Text style={styles.countPillText}>{savedSlugs.length}</Text>
+              </View>
             </View>
 
-            <Pressable style={styles.button} onPress={handleLogout}>
-              <Text style={styles.buttonText}>Log Out</Text>
+            <Pressable style={styles.primaryButton} onPress={handleLogout}>
+              <Text style={styles.primaryButtonText}>Log Out</Text>
             </Pressable>
           </>
         ) : (
           <>
-            <Text style={styles.sectionLabel}>Guest mode</Text>
+            <Text style={styles.label}>Guest mode</Text>
             <Text style={styles.email}>You are not logged in.</Text>
 
             <Text style={styles.helperText}>
-              Log in or create an account to save businesses across devices.
+              Log in or create an account to save businesses and receive recommendations.
             </Text>
 
-            <Pressable style={styles.button} onPress={() => router.push('/auth')}>
-              <Text style={styles.buttonText}>Log In / Sign Up</Text>
+            <Pressable style={styles.primaryButton} onPress={() => router.push('/auth')}>
+              <Text style={styles.primaryButtonText}>Log In / Sign Up</Text>
             </Pressable>
           </>
         )}
@@ -68,21 +75,22 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
   },
   loadingText: {
     fontSize: 16,
-    color: '#77776f',
+    color: GimaColors.mutedText,
   },
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
     paddingHorizontal: 20,
     paddingTop: 56,
   },
+
   hero: {
     marginBottom: 24,
   },
@@ -90,74 +98,92 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#6b6b63',
-    marginBottom: 8,
+    color: GimaColors.mutedText,
+    marginBottom: 6,
   },
   title: {
     fontSize: 36,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 10,
+    fontWeight: '900',
+    color: GimaColors.ocean,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
+    color: GimaColors.mutedText,
     lineHeight: 24,
-    color: '#5f5f58',
   },
+
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: GimaColors.card,
+    borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
   },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
+  label: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: '#6b6b63',
+    color: GimaColors.mutedText,
     marginBottom: 8,
   },
   email: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontWeight: '800',
+    color: GimaColors.ocean,
     marginBottom: 18,
   },
   helperText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: GimaColors.mutedText,
     marginBottom: 20,
   },
-  statRow: {
+
+  statCard: {
+    backgroundColor: GimaColors.background,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+    marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f7f7f4',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    marginBottom: 20,
   },
   statLabel: {
-    fontSize: 15,
-    color: '#5f5f58',
-  },
-  statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
-    color: '#111',
+    color: GimaColors.text,
+    marginBottom: 3,
   },
-  button: {
-    backgroundColor: '#111',
+  statHint: {
+    fontSize: 13,
+    color: GimaColors.mutedText,
+  },
+
+  countPill: {
+    backgroundColor: GimaColors.coral,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+  },
+  countPillText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: GimaColors.text,
+  },
+
+  primaryButton: {
+    backgroundColor: GimaColors.ocean,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
-  buttonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

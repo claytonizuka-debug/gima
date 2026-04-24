@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 
+import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 
@@ -33,7 +34,7 @@ export default function BusinessDetailScreen() {
 
   const [recommendModalVisible, setRecommendModalVisible] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
-  const [message, setMessage] = useState(''); // ✅ NEW
+  const [message, setMessage] = useState('');
   const [sendingRecommendation, setSendingRecommendation] = useState(false);
 
   useEffect(() => {
@@ -70,6 +71,9 @@ export default function BusinessDetailScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>Business not found</Text>
+        <Text style={styles.emptyText}>
+          We could not find information for this business.
+        </Text>
       </View>
     );
   }
@@ -78,13 +82,9 @@ export default function BusinessDetailScreen() {
   const businessSlug = safeBusiness.slug;
   const saved = isSaved(businessSlug);
 
-  async function handleSavePress() {
+  async function handleSave() {
     if (!user) {
-      Alert.alert(
-        'Login required',
-        'Please log in to save businesses.',
-        [{ text: 'Go to Login', onPress: () => router.push('/auth') }]
-      );
+      router.push('/auth');
       return;
     }
 
@@ -106,18 +106,20 @@ export default function BusinessDetailScreen() {
     setRecommendModalVisible(true);
   }
 
-  async function handleSendRecommendation() {
+  async function handleSend() {
     if (!user || !user.email) return;
 
+    const fromEmail = user.email;
     const cleanEmail = recipientEmail.trim().toLowerCase();
+    const cleanMessage = message.trim();
 
     if (!cleanEmail) {
       Alert.alert('Missing email', 'Please enter an email.');
       return;
     }
 
-    if (cleanEmail === user.email.toLowerCase()) {
-      Alert.alert('Invalid', 'You cannot recommend to yourself.');
+    if (cleanEmail === fromEmail.toLowerCase()) {
+      Alert.alert('Invalid', 'You cannot recommend a business to yourself.');
       return;
     }
 
@@ -135,8 +137,8 @@ export default function BusinessDetailScreen() {
         toUserId: targetUser.uid,
         businessSlug,
         fromUserId: user.uid,
-        fromEmail: user.email,
-        message: message.trim(), // ✅ NEW
+        fromEmail,
+        message: cleanMessage,
       });
 
       setRecommendModalVisible(false);
@@ -157,18 +159,22 @@ export default function BusinessDetailScreen() {
 
   return (
     <>
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <Image source={{ uri: safeBusiness.image }} style={styles.image} />
 
         <Text style={styles.title}>{safeBusiness.name}</Text>
         <Text style={styles.description}>{safeBusiness.description}</Text>
 
         <Pressable
-          style={[styles.button, saved && styles.savedButton]}
-          onPress={handleSavePress}
+          style={[styles.primaryButton, saved && styles.savedButton]}
+          onPress={handleSave}
           disabled={savedLoading}
         >
-          <Text style={styles.buttonText}>
+          <Text style={styles.primaryButtonText}>
             {saved ? 'Saved' : 'Save Business'}
           </Text>
         </Pressable>
@@ -179,58 +185,55 @@ export default function BusinessDetailScreen() {
 
         <View style={styles.infoCard}>
           <Text style={styles.label}>Hours</Text>
-          <Text>{safeBusiness.hours}</Text>
+          <Text style={styles.infoText}>{safeBusiness.hours}</Text>
         </View>
 
         <View style={styles.infoCard}>
           <Text style={styles.label}>Location</Text>
-          <Text>{safeBusiness.location}</Text>
+          <Text style={styles.infoText}>{safeBusiness.location}</Text>
         </View>
       </ScrollView>
 
-      {/* ✅ MODAL */}
       <Modal visible={recommendModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              Recommend {safeBusiness.name}
-            </Text>
+            <Text style={styles.modalTitle}>Recommend {safeBusiness.name}</Text>
 
             <TextInput
-              style={styles.modalInput}
-              placeholder="Enter email"
-              placeholderTextColor="#999"
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor={GimaColors.mutedText}
               value={recipientEmail}
               onChangeText={setRecipientEmail}
             />
 
             <TextInput
-              style={[styles.modalInput, { height: 80 }]}
-              placeholder="Add a message (optional)"
-              placeholderTextColor="#999"
+              style={[styles.input, styles.messageInput]}
+              placeholder="Message (optional)"
+              placeholderTextColor={GimaColors.mutedText}
               value={message}
               onChangeText={setMessage}
               multiline
             />
 
             <Pressable
-              style={styles.modalButton}
-              onPress={handleSendRecommendation}
+              style={styles.modalPrimaryButton}
+              onPress={handleSend}
               disabled={sendingRecommendation}
             >
-              <Text style={styles.modalButtonText}>
+              <Text style={styles.modalPrimaryButtonText}>
                 {sendingRecommendation ? 'Sending...' : 'Send'}
               </Text>
             </Pressable>
 
             <Pressable
-              onPress={() => setRecommendModalVisible(false)}
               style={styles.cancelButton}
+              onPress={() => setRecommendModalVisible(false)}
             >
-              <Text>Cancel</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
@@ -240,82 +243,143 @@ export default function BusinessDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f7f7f4' },
-  content: { padding: 20 },
-
-  image: { width: '100%', height: 240, borderRadius: 20, marginBottom: 16 },
-  title: { fontSize: 28, fontWeight: '800', marginBottom: 10 },
-  description: { fontSize: 16, color: '#555', marginBottom: 16 },
-
-  button: {
-    backgroundColor: '#111',
+  container: {
+    flex: 1,
+    backgroundColor: GimaColors.background,
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  image: {
+    width: '100%',
+    height: 240,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: GimaColors.ocean,
+    marginBottom: 8,
+  },
+  description: {
+    fontSize: 16,
+    color: GimaColors.mutedText,
+    marginBottom: 16,
+  },
+  primaryButton: {
+    backgroundColor: GimaColors.ocean,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 10,
   },
-  savedButton: { backgroundColor: '#0a7' },
-  buttonText: { color: '#fff', fontWeight: '700' },
-
+  savedButton: {
+    backgroundColor: GimaColors.leaf,
+  },
+  primaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
   secondaryButton: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: GimaColors.card,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
     padding: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 16,
   },
-  secondaryButtonText: { fontWeight: '700' },
-
-  infoCard: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 10,
+  secondaryButtonText: {
+    color: GimaColors.text,
+    fontWeight: '800',
   },
-  label: { fontWeight: '700', marginBottom: 4 },
-
+  infoCard: {
+    backgroundColor: GimaColors.card,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: GimaColors.mutedText,
+    marginBottom: 4,
+  },
+  infoText: {
+    fontSize: 15,
+    color: GimaColors.text,
+  },
   modalOverlay: {
     flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
     padding: 20,
   },
   modalCard: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: GimaColors.card,
     padding: 20,
+    borderRadius: 16,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '700',
-    marginBottom: 10,
+    color: GimaColors.ocean,
+    marginBottom: 12,
   },
-  modalInput: {
+  input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: GimaColors.border,
     borderRadius: 10,
     padding: 12,
     marginBottom: 12,
   },
-  modalButton: {
-    backgroundColor: '#111',
-    padding: 12,
-    borderRadius: 10,
+  messageInput: {
+    height: 80,
+    textAlignVertical: 'top',
+  },
+  modalPrimaryButton: {
+    backgroundColor: GimaColors.ocean,
+    padding: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginBottom: 10,
   },
-  modalButtonText: { color: '#fff', fontWeight: '700' },
-
+  modalPrimaryButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
   cancelButton: {
     alignItems: 'center',
-    padding: 8,
+    padding: 10,
   },
-
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  loadingText: { color: '#777' },
-
-  emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  emptyTitle: { fontSize: 18, fontWeight: '700' },
+  cancelButtonText: {
+    color: GimaColors.mutedText,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: GimaColors.background,
+  },
+  loadingText: {
+    color: GimaColors.mutedText,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: GimaColors.background,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: GimaColors.ocean,
+  },
+  emptyText: {
+    color: GimaColors.mutedText,
+  },
 });

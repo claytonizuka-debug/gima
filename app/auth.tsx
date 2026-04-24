@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
 import { logIn, signUp } from '../services/authService';
 
@@ -33,21 +34,23 @@ export default function AuthScreen() {
   }
 
   async function handleSubmit() {
-    if (!email || !password) {
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
       Alert.alert('Missing info', 'Please enter both email and password.');
       return;
     }
 
     try {
       if (isLoginMode) {
-        await logIn(email, password);
+        await logIn(cleanEmail, password);
       } else {
-        await signUp(email, password);
+        await signUp(cleanEmail, password);
       }
 
       router.replace('/');
     } catch (error: any) {
-      Alert.alert('Auth Error', error.message || 'Something went wrong');
+      Alert.alert('Auth Error', error.message || 'Something went wrong.');
     }
   }
 
@@ -64,60 +67,79 @@ export default function AuthScreen() {
       >
         <View style={styles.hero}>
           <Text style={styles.eyebrow}>GIMA ACCOUNT</Text>
+
           <Text style={styles.title}>
-            {isLoginMode ? 'Welcome back' : 'Create your account'}
+            {isLoginMode ? 'Welcome back' : 'Join Gima'}
           </Text>
+
           <Text style={styles.subtitle}>
             {isLoginMode
-              ? 'Log in to save your favorite places across Saipan.'
-              : 'Join Gima to build your personal list of local spots.'}
+              ? 'Log in to save places and receive island recommendations.'
+              : 'Create an account to save local spots and share recommendations.'}
           </Text>
         </View>
 
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {isLoginMode ? 'Log In' : 'Sign Up'}
-          </Text>
+          <View style={styles.modeRow}>
+            <Pressable
+              style={[styles.modeButton, isLoginMode && styles.activeModeButton]}
+              onPress={() => setIsLoginMode(true)}
+            >
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  isLoginMode && styles.activeModeButtonText,
+                ]}
+              >
+                Log In
+              </Text>
+            </Pressable>
 
+            <Pressable
+              style={[styles.modeButton, !isLoginMode && styles.activeModeButton]}
+              onPress={() => setIsLoginMode(false)}
+            >
+              <Text
+                style={[
+                  styles.modeButtonText,
+                  !isLoginMode && styles.activeModeButtonText,
+                ]}
+              >
+                Sign Up
+              </Text>
+            </Pressable>
+          </View>
+
+          <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#8a8a83"
+            placeholder="you@example.com"
+            placeholderTextColor={GimaColors.mutedText}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
           />
 
+          <Text style={styles.label}>Password</Text>
           <TextInput
             style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#8a8a83"
+            placeholder="At least 6 characters"
+            placeholderTextColor={GimaColors.mutedText}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
 
-          <Pressable style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>
+          <Pressable style={styles.primaryButton} onPress={handleSubmit}>
+            <Text style={styles.primaryButtonText}>
               {isLoginMode ? 'Log In' : 'Create Account'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.switchButton}
-            onPress={() => setIsLoginMode(!isLoginMode)}
-          >
-            <Text style={styles.switchText}>
-              {isLoginMode
-                ? 'Need an account? Sign up'
-                : 'Already have an account? Log in'}
             </Text>
           </Pressable>
         </View>
 
         <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backText}>Go back</Text>
+          <Text style={styles.backButtonText}>Go back</Text>
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -127,11 +149,11 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
   },
   contentContainer: {
     flexGrow: 1,
@@ -140,6 +162,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
     justifyContent: 'center',
   },
+
   hero: {
     marginBottom: 26,
   },
@@ -147,72 +170,96 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#6b6b63',
-    marginBottom: 8,
+    color: GimaColors.mutedText,
+    marginBottom: 6,
   },
   title: {
     fontSize: 38,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 10,
+    fontWeight: '900',
+    color: GimaColors.ocean,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#5f5f58',
+    color: GimaColors.mutedText,
   },
+
   card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
+    backgroundColor: GimaColors.card,
+    borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
   },
-  cardTitle: {
-    fontSize: 22,
+
+  modeRow: {
+    flexDirection: 'row',
+    backgroundColor: GimaColors.background,
+    borderRadius: 14,
+    padding: 4,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+  },
+  modeButton: {
+    flex: 1,
+    paddingVertical: 11,
+    alignItems: 'center',
+    borderRadius: 11,
+  },
+  activeModeButton: {
+    backgroundColor: GimaColors.ocean,
+  },
+  modeButtonText: {
+    fontSize: 15,
     fontWeight: '800',
-    color: '#111',
-    marginBottom: 18,
+    color: GimaColors.mutedText,
+  },
+  activeModeButtonText: {
+    color: '#fff',
+  },
+
+  label: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: GimaColors.mutedText,
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: '#f7f7f4',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#111',
-    marginBottom: 14,
+    backgroundColor: GimaColors.background,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 16,
+    color: GimaColors.text,
+    marginBottom: 14,
   },
-  button: {
-    backgroundColor: '#111',
-    paddingVertical: 15,
-    borderRadius: 16,
+
+  primaryButton: {
+    backgroundColor: GimaColors.ocean,
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 4,
-    marginBottom: 16,
   },
-  buttonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  switchButton: {
-    alignItems: 'center',
-  },
-  switchText: {
-    color: '#444',
-    fontSize: 15,
-    fontWeight: '600',
-  },
+
   backButton: {
     alignItems: 'center',
     marginTop: 22,
   },
-  backText: {
+  backButtonText: {
+    color: GimaColors.mutedText,
     fontSize: 15,
-    color: '#77776f',
-    fontWeight: '600',
+    fontWeight: '700',
   },
 });

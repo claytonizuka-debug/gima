@@ -2,12 +2,13 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
 import { getBusinessBySlug, type Business } from '../../services/businessService';
 import {
-    getRecommendationsForUser,
-    markAllRecommendationsAsRead,
-    type Recommendation,
+  getRecommendationsForUser,
+  markAllRecommendationsAsRead,
+  type Recommendation,
 } from '../../services/recommendationService';
 
 type RecommendationWithBusiness = Recommendation & {
@@ -104,19 +105,23 @@ export default function RecommendationsScreen() {
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>RECOMMENDATIONS</Text>
-        <Text style={styles.title}>Inbox</Text>
+        <Text style={styles.eyebrow}>INBOX</Text>
+        <Text style={styles.title}>Recommendations</Text>
         <Text style={styles.subtitle}>
-          Places other users think you should check out.
+          Places shared with you by other Gima users.
         </Text>
       </View>
 
       <View style={styles.resultsHeader}>
-        <Text style={styles.resultsTitle}>Recommended</Text>
+        <View>
+          <Text style={styles.resultsTitle}>Shared Places</Text>
+          <Text style={styles.resultsCaption}>Local tips from your circle</Text>
+        </View>
+
         {!loading && user && (
-          <Text style={styles.resultsCount}>
-            {recommendations.length} total
-          </Text>
+          <View style={styles.countPill}>
+            <Text style={styles.countPillText}>{recommendations.length}</Text>
+          </View>
         )}
       </View>
 
@@ -127,10 +132,11 @@ export default function RecommendationsScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>Log in to see recommendations</Text>
             <Text style={styles.emptyText}>
-              Create an account or log in to receive recommendations from others.
+              Create an account or log in to receive places from other users.
             </Text>
-            <Pressable style={styles.button} onPress={() => router.push('/auth')}>
-              <Text style={styles.buttonText}>Log In / Sign Up</Text>
+
+            <Pressable style={styles.primaryButton} onPress={() => router.push('/auth')}>
+              <Text style={styles.primaryButtonText}>Log In / Sign Up</Text>
             </Pressable>
           </View>
         ) : recommendations.length > 0 ? (
@@ -186,7 +192,7 @@ export default function RecommendationsScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No recommendations yet</Text>
             <Text style={styles.emptyText}>
-              When someone sends you a place to check out, it will appear here.
+              When someone recommends a place to you, it will appear here.
             </Text>
           </View>
         )}
@@ -198,13 +204,14 @@ export default function RecommendationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
   },
   contentContainer: {
     paddingHorizontal: 20,
     paddingTop: 28,
     paddingBottom: 36,
   },
+
   hero: {
     marginTop: 28,
     marginBottom: 22,
@@ -213,54 +220,73 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: '#6b6b63',
-    marginBottom: 8,
+    color: GimaColors.mutedText,
+    marginBottom: 6,
   },
   title: {
     fontSize: 36,
-    fontWeight: '800',
-    color: '#111',
-    marginBottom: 10,
+    fontWeight: '900',
+    color: GimaColors.ocean,
+    marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
+    color: GimaColors.mutedText,
     lineHeight: 24,
-    color: '#5f5f58',
   },
+
   resultsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 14,
+    gap: 12,
   },
   resultsTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    color: '#111',
+    fontWeight: '800',
+    color: GimaColors.ocean,
   },
-  resultsCount: {
-    fontSize: 14,
-    color: '#77776f',
+  resultsCaption: {
+    fontSize: 13,
+    color: GimaColors.mutedText,
+    marginTop: 2,
   },
+
+  countPill: {
+    backgroundColor: GimaColors.card,
+    borderWidth: 1,
+    borderColor: GimaColors.coral,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  countPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: GimaColors.text,
+  },
+
   section: {
     marginBottom: 18,
   },
   helperText: {
     fontSize: 16,
-    color: '#77776f',
+    color: GimaColors.mutedText,
   },
+
   recommendationCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: GimaColors.card,
+    borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
     marginBottom: 14,
   },
   unreadCard: {
-    borderColor: '#cfead8',
-    backgroundColor: '#fbfffc',
+    borderColor: GimaColors.coral,
   },
+
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -274,15 +300,16 @@ const styles = StyleSheet.create({
   recommendedBy: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#6b6b63',
+    color: GimaColors.mutedText,
     marginBottom: 3,
   },
   sentAt: {
     fontSize: 12,
-    color: '#8a8a83',
+    color: GimaColors.mutedText,
   },
+
   unreadPill: {
-    backgroundColor: '#e9f7ef',
+    backgroundColor: GimaColors.coral,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
@@ -290,66 +317,71 @@ const styles = StyleSheet.create({
   unreadPillText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#198754',
+    color: GimaColors.text,
   },
+
   businessName: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#111',
+    color: GimaColors.ocean,
     marginBottom: 6,
   },
   businessDescription: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: GimaColors.mutedText,
     marginBottom: 10,
   },
+
   messageBubble: {
-    backgroundColor: '#f7f7f4',
+    backgroundColor: GimaColors.background,
     borderRadius: 14,
     padding: 12,
-    marginTop: 2,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
   },
   messageLabel: {
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 0.8,
     textTransform: 'uppercase',
-    color: '#6b6b63',
+    color: GimaColors.ocean,
     marginBottom: 5,
   },
   messageText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#333',
+    color: GimaColors.text,
     fontStyle: 'italic',
   },
+
   emptyState: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
+    backgroundColor: GimaColors.card,
+    borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#ececec',
+    borderColor: GimaColors.border,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#111',
+    fontWeight: '800',
+    color: GimaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 15,
     lineHeight: 22,
-    color: '#666',
+    color: GimaColors.mutedText,
     marginBottom: 18,
   },
-  button: {
-    backgroundColor: '#111',
+
+  primaryButton: {
+    backgroundColor: GimaColors.ocean,
     paddingVertical: 14,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
-  buttonText: {
+  primaryButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '700',
