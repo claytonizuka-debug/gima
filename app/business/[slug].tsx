@@ -33,6 +33,7 @@ export default function BusinessDetailScreen() {
 
   const [recommendModalVisible, setRecommendModalVisible] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
+  const [message, setMessage] = useState(''); // ✅ NEW
   const [sendingRecommendation, setSendingRecommendation] = useState(false);
 
   useEffect(() => {
@@ -69,16 +70,11 @@ export default function BusinessDetailScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>Business not found</Text>
-        <Text style={styles.emptyText}>
-          We could not find information for this business.
-        </Text>
       </View>
     );
   }
 
-  // ✅ FIX: create non-null reference for TypeScript
   const safeBusiness = business;
-
   const businessSlug = safeBusiness.slug;
   const saved = isSaved(businessSlug);
 
@@ -106,6 +102,7 @@ export default function BusinessDetailScreen() {
     }
 
     setRecipientEmail('');
+    setMessage('');
     setRecommendModalVisible(true);
   }
 
@@ -139,12 +136,13 @@ export default function BusinessDetailScreen() {
         businessSlug,
         fromUserId: user.uid,
         fromEmail: user.email,
+        message: message.trim(), // ✅ NEW
       });
 
       setRecommendModalVisible(false);
       setRecipientEmail('');
+      setMessage('');
 
-      // ✅ FIXED HERE
       Alert.alert(
         'Recommendation sent',
         `${safeBusiness.name} was sent to ${cleanEmail}.`
@@ -159,33 +157,24 @@ export default function BusinessDetailScreen() {
 
   return (
     <>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <Image source={{ uri: safeBusiness.image }} style={styles.image} />
 
         <Text style={styles.title}>{safeBusiness.name}</Text>
         <Text style={styles.description}>{safeBusiness.description}</Text>
 
         <Pressable
-          style={[styles.saveButton, saved && styles.savedButton]}
+          style={[styles.button, saved && styles.savedButton]}
           onPress={handleSavePress}
           disabled={savedLoading}
         >
-          <Text style={styles.saveButtonText}>
+          <Text style={styles.buttonText}>
             {saved ? 'Saved' : 'Save Business'}
           </Text>
         </Pressable>
 
-        <Pressable
-          style={styles.recommendButton}
-          onPress={handleOpenRecommendModal}
-        >
-          <Text style={styles.recommendButtonText}>
-            Recommend to Someone
-          </Text>
+        <Pressable style={styles.secondaryButton} onPress={handleOpenRecommendModal}>
+          <Text style={styles.secondaryButtonText}>Recommend</Text>
         </Pressable>
 
         <View style={styles.infoCard}>
@@ -199,6 +188,7 @@ export default function BusinessDetailScreen() {
         </View>
       </ScrollView>
 
+      {/* ✅ MODAL */}
       <Modal visible={recommendModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
@@ -215,6 +205,15 @@ export default function BusinessDetailScreen() {
               placeholderTextColor="#999"
               value={recipientEmail}
               onChangeText={setRecipientEmail}
+            />
+
+            <TextInput
+              style={[styles.modalInput, { height: 80 }]}
+              placeholder="Add a message (optional)"
+              placeholderTextColor="#999"
+              value={message}
+              onChangeText={setMessage}
+              multiline
             />
 
             <Pressable
@@ -242,12 +241,13 @@ export default function BusinessDetailScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f7f7f4' },
-  contentContainer: { padding: 20 },
+  content: { padding: 20 },
+
   image: { width: '100%', height: 240, borderRadius: 20, marginBottom: 16 },
   title: { fontSize: 28, fontWeight: '800', marginBottom: 10 },
   description: { fontSize: 16, color: '#555', marginBottom: 16 },
 
-  saveButton: {
+  button: {
     backgroundColor: '#111',
     padding: 14,
     borderRadius: 14,
@@ -255,18 +255,18 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   savedButton: { backgroundColor: '#0a7' },
-  saveButtonText: { color: '#fff', fontWeight: '700' },
+  buttonText: { color: '#fff', fontWeight: '700' },
 
-  recommendButton: {
+  secondaryButton: {
     backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
     padding: 14,
     borderRadius: 14,
     alignItems: 'center',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
   },
-  recommendButtonText: { fontWeight: '700' },
+  secondaryButtonText: { fontWeight: '700' },
 
   infoCard: {
     backgroundColor: '#fff',
@@ -318,5 +318,4 @@ const styles = StyleSheet.create({
 
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyTitle: { fontSize: 18, fontWeight: '700' },
-  emptyText: { color: '#666' },
 });

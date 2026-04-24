@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { useAuth } from '@/context/AuthContext';
@@ -13,6 +13,22 @@ import {
 type RecommendationWithBusiness = Recommendation & {
   business: Business | null;
 };
+
+function formatRecommendationDate(createdAt: string) {
+  const date = new Date(createdAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
 
 export default function RecommendationsScreen() {
   const { user, loading: authLoading } = useAuth();
@@ -45,8 +61,6 @@ export default function RecommendationsScreen() {
         );
 
         setRecommendations(recommendationsWithBusinesses);
-
-        await markAllRecommendationsAsRead(user.uid);
       } catch (error) {
         console.error('Error loading recommendations:', error);
       } finally {
@@ -57,6 +71,31 @@ export default function RecommendationsScreen() {
     setLoading(true);
     loadRecommendations();
   }, [user, authLoading]);
+
+  useFocusEffect(
+    useCallback(() => {
+      async function markAsReadOnFocus() {
+        if (!user) return;
+
+        try {
+          setTimeout(async () => {
+            await markAllRecommendationsAsRead(user.uid);
+
+            setRecommendations((current) =>
+              current.map((recommendation) => ({
+                ...recommendation,
+                read: true,
+              }))
+            );
+          }, 1200);
+        } catch (error) {
+          console.error('Error marking recommendations as read:', error);
+        }
+      }
+
+      markAsReadOnFocus();
+    }, [user])
+  );
 
   return (
     <ScrollView
@@ -109,9 +148,15 @@ export default function RecommendationsScreen() {
               }}
             >
               <View style={styles.cardTopRow}>
-                <Text style={styles.recommendedBy}>
-                  Recommended by {recommendation.fromEmail}
-                </Text>
+                <View style={styles.senderBlock}>
+                  <Text style={styles.recommendedBy}>
+                    Recommended by {recommendation.fromEmail}
+                  </Text>
+
+                  <Text style={styles.sentAt}>
+                    {formatRecommendationDate(recommendation.createdAt)}
+                  </Text>
+                </View>
 
                 {!recommendation.read && (
                   <View style={styles.unreadPill}>
@@ -128,6 +173,13 @@ export default function RecommendationsScreen() {
                 {recommendation.business?.shortDescription ??
                   'This business may no longer be available.'}
               </Text>
+
+              {recommendation.message ? (
+                <View style={styles.messageBubble}>
+                  <Text style={styles.messageLabel}>Message</Text>
+                  <Text style={styles.messageText}>“{recommendation.message}”</Text>
+                </View>
+              ) : null}
             </Pressable>
           ))
         ) : (
@@ -212,15 +264,22 @@ const styles = StyleSheet.create({
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 10,
     gap: 12,
   },
-  recommendedBy: {
+  senderBlock: {
     flex: 1,
+  },
+  recommendedBy: {
     fontSize: 13,
     fontWeight: '700',
     color: '#6b6b63',
+    marginBottom: 3,
+  },
+  sentAt: {
+    fontSize: 12,
+    color: '#8a8a83',
   },
   unreadPill: {
     backgroundColor: '#e9f7ef',
@@ -243,6 +302,27 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: '#666',
+    marginBottom: 10,
+  },
+  messageBubble: {
+    backgroundColor: '#f7f7f4',
+    borderRadius: 14,
+    padding: 12,
+    marginTop: 2,
+  },
+  messageLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: '#6b6b63',
+    marginBottom: 5,
+  },
+  messageText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#333',
+    fontStyle: 'italic',
   },
   emptyState: {
     backgroundColor: '#ffffff',

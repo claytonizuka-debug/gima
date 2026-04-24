@@ -1,6 +1,8 @@
+import { Stack } from 'expo-router';
+import { StatusBar } from 'react-native';
+
 import { AuthProvider } from '@/context/AuthContext';
 import { SavedBusinessesProvider } from '@/context/SavedBusinessesContext';
-import { Stack } from 'expo-router';
 
 export const unstable_settings = {
   initialRouteName: '(tabs)',
@@ -10,6 +12,8 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SavedBusinessesProvider>
+        <StatusBar barStyle="dark-content" backgroundColor="#f7f7f4" />
+
         <Stack>
           <Stack.Screen
             name="(tabs)"

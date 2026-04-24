@@ -16,6 +16,7 @@ export type Recommendation = {
   businessSlug: string;
   fromUserId: string;
   fromEmail: string;
+  message?: string; // ✅ NEW
   createdAt: string;
   read: boolean;
 };
@@ -25,6 +26,7 @@ type SendRecommendationInput = {
   businessSlug: string;
   fromUserId: string;
   fromEmail: string;
+  message?: string; // ✅ NEW
 };
 
 export async function sendRecommendation({
@@ -32,6 +34,7 @@ export async function sendRecommendation({
   businessSlug,
   fromUserId,
   fromEmail,
+  message,
 }: SendRecommendationInput) {
   const ref = collection(db, 'users', toUserId, 'recommendations');
 
@@ -39,6 +42,7 @@ export async function sendRecommendation({
     businessSlug,
     fromUserId,
     fromEmail: fromEmail.toLowerCase(),
+    message: message ?? '', // ✅ store message
     createdAt: new Date().toISOString(),
     read: false,
   });
@@ -46,7 +50,6 @@ export async function sendRecommendation({
 
 export async function getRecommendationsForUser(userId: string) {
   const ref = collection(db, 'users', userId, 'recommendations');
-
   const q = query(ref, orderBy('createdAt', 'desc'));
 
   const snapshot = await getDocs(q);
@@ -62,7 +65,6 @@ export function subscribeToUnreadRecommendationCount(
   callback: (count: number) => void
 ) {
   const ref = collection(db, 'users', userId, 'recommendations');
-
   const q = query(ref, where('read', '==', false));
 
   return onSnapshot(q, (snapshot) => {
@@ -72,7 +74,6 @@ export function subscribeToUnreadRecommendationCount(
 
 export async function markAllRecommendationsAsRead(userId: string) {
   const ref = collection(db, 'users', userId, 'recommendations');
-
   const snapshot = await getDocs(ref);
 
   const updates = snapshot.docs
