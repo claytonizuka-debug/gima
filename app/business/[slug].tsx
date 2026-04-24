@@ -3,10 +3,14 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from 'react-native';
 
@@ -26,6 +30,10 @@ export default function BusinessDetailScreen() {
 
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [recommendModalVisible, setRecommendModalVisible] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [sendingRecommendation, setSendingRecommendation] = useState(false);
 
   useEffect(() => {
     async function loadBusiness() {
@@ -61,11 +69,17 @@ export default function BusinessDetailScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyTitle}>Business not found</Text>
+        <Text style={styles.emptyText}>
+          We could not find information for this business.
+        </Text>
       </View>
     );
   }
 
-  const businessSlug = business.slug;
+  // ✅ FIX: create non-null reference for TypeScript
+  const safeBusiness = business;
+
+  const businessSlug = safeBusiness.slug;
   const saved = isSaved(businessSlug);
 
   async function handleSavePress() {
@@ -81,7 +95,7 @@ export default function BusinessDetailScreen() {
     await toggleSaved(businessSlug);
   }
 
-  async function handleRecommendPress() {
+  function handleOpenRecommendModal() {
     if (!user || !user.email) {
       Alert.alert(
         'Login required',
@@ -91,73 +105,138 @@ export default function BusinessDetailScreen() {
       return;
     }
 
-    // ✅ FIX: store safe email
-    const fromEmail = user.email;
+    setRecipientEmail('');
+    setRecommendModalVisible(true);
+  }
 
-    Alert.prompt(
-      'Send Recommendation',
-      'Enter the email of the person you want to recommend this to:',
-      async (email) => {
-        if (!email) return;
+  async function handleSendRecommendation() {
+    if (!user || !user.email) return;
 
-        try {
-          const targetUser = await getUserByEmail(email);
+    const cleanEmail = recipientEmail.trim().toLowerCase();
 
-          if (!targetUser) {
-            Alert.alert('User not found', 'No account exists with that email.');
-            return;
-          }
+    if (!cleanEmail) {
+      Alert.alert('Missing email', 'Please enter an email.');
+      return;
+    }
 
-          await sendRecommendation({
-            toUserId: targetUser.uid,
-            businessSlug,
-            fromUserId: user.uid,
-            fromEmail: fromEmail, // ✅ no more error
-          });
+    if (cleanEmail === user.email.toLowerCase()) {
+      Alert.alert('Invalid', 'You cannot recommend to yourself.');
+      return;
+    }
 
-          Alert.alert('Success', 'Recommendation sent!');
-        } catch (error) {
-          console.error(error);
-          Alert.alert('Error', 'Failed to send recommendation.');
-        }
+    try {
+      setSendingRecommendation(true);
+
+      const targetUser = await getUserByEmail(cleanEmail);
+
+      if (!targetUser) {
+        Alert.alert('User not found', 'No account exists with that email.');
+        return;
       }
-    );
+
+      await sendRecommendation({
+        toUserId: targetUser.uid,
+        businessSlug,
+        fromUserId: user.uid,
+        fromEmail: user.email,
+      });
+
+      setRecommendModalVisible(false);
+      setRecipientEmail('');
+
+      // ✅ FIXED HERE
+      Alert.alert(
+        'Recommendation sent',
+        `${safeBusiness.name} was sent to ${cleanEmail}.`
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to send recommendation.');
+    } finally {
+      setSendingRecommendation(false);
+    }
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
-      <Image source={{ uri: business.image }} style={styles.image} />
-
-      <Text style={styles.title}>{business.name}</Text>
-      <Text style={styles.description}>{business.description}</Text>
-
-      <Pressable
-        style={[styles.button, saved && styles.savedButton]}
-        onPress={handleSavePress}
-        disabled={savedLoading}
+    <>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.buttonText}>
-          {saved ? 'Saved' : 'Save Business'}
-        </Text>
-      </Pressable>
+        <Image source={{ uri: safeBusiness.image }} style={styles.image} />
 
-      <Pressable style={styles.secondaryButton} onPress={handleRecommendPress}>
-        <Text style={styles.secondaryButtonText}>Recommend</Text>
-      </Pressable>
+        <Text style={styles.title}>{safeBusiness.name}</Text>
+        <Text style={styles.description}>{safeBusiness.description}</Text>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Hours</Text>
-        <Text>{business.hours}</Text>
-      </View>
+        <Pressable
+          style={[styles.saveButton, saved && styles.savedButton]}
+          onPress={handleSavePress}
+          disabled={savedLoading}
+        >
+          <Text style={styles.saveButtonText}>
+            {saved ? 'Saved' : 'Save Business'}
+          </Text>
+        </Pressable>
 
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Location</Text>
-        <Text>{business.location}</Text>
-      </View>
-    </ScrollView>
+        <Pressable
+          style={styles.recommendButton}
+          onPress={handleOpenRecommendModal}
+        >
+          <Text style={styles.recommendButtonText}>
+            Recommend to Someone
+          </Text>
+        </Pressable>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.label}>Hours</Text>
+          <Text>{safeBusiness.hours}</Text>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.label}>Location</Text>
+          <Text>{safeBusiness.location}</Text>
+        </View>
+      </ScrollView>
+
+      <Modal visible={recommendModalVisible} transparent animationType="fade">
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>
+              Recommend {safeBusiness.name}
+            </Text>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter email"
+              placeholderTextColor="#999"
+              value={recipientEmail}
+              onChangeText={setRecipientEmail}
+            />
+
+            <Pressable
+              style={styles.modalButton}
+              onPress={handleSendRecommendation}
+              disabled={sendingRecommendation}
+            >
+              <Text style={styles.modalButtonText}>
+                {sendingRecommendation ? 'Sending...' : 'Send'}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => setRecommendModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              <Text>Cancel</Text>
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
+    </>
   );
 }
 
@@ -168,34 +247,26 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontWeight: '800', marginBottom: 10 },
   description: { fontSize: 16, color: '#555', marginBottom: 16 },
 
-  button: {
+  saveButton: {
     backgroundColor: '#111',
     padding: 14,
     borderRadius: 14,
     alignItems: 'center',
     marginBottom: 10,
   },
-  savedButton: {
-    backgroundColor: '#0a7',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-  },
+  savedButton: { backgroundColor: '#0a7' },
+  saveButtonText: { color: '#fff', fontWeight: '700' },
 
-  secondaryButton: {
+  recommendButton: {
     backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
     padding: 14,
     borderRadius: 14,
     alignItems: 'center',
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
   },
-  secondaryButtonText: {
-    fontWeight: '700',
-    color: '#111',
-  },
+  recommendButtonText: { fontWeight: '700' },
 
   infoCard: {
     backgroundColor: '#fff',
@@ -203,9 +274,43 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginBottom: 10,
   },
-  label: {
+  label: { fontWeight: '700', marginBottom: 4 },
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 20,
+  },
+  modalCard: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
     fontWeight: '700',
-    marginBottom: 4,
+    marginBottom: 10,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 12,
+  },
+  modalButton: {
+    backgroundColor: '#111',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  modalButtonText: { color: '#fff', fontWeight: '700' },
+
+  cancelButton: {
+    alignItems: 'center',
+    padding: 8,
   },
 
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
@@ -213,4 +318,5 @@ const styles = StyleSheet.create({
 
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyTitle: { fontSize: 18, fontWeight: '700' },
+  emptyText: { color: '#666' },
 });

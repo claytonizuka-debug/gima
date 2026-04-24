@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getBusinessBySlug, type Business } from '../../services/businessService';
 import {
     getRecommendationsForUser,
+    markAllRecommendationsAsRead,
     type Recommendation,
 } from '../../services/recommendationService';
 
@@ -21,9 +22,7 @@ export default function RecommendationsScreen() {
 
   useEffect(() => {
     async function loadRecommendations() {
-      if (authLoading) {
-        return;
-      }
+      if (authLoading) return;
 
       if (!user) {
         setRecommendations([]);
@@ -46,6 +45,8 @@ export default function RecommendationsScreen() {
         );
 
         setRecommendations(recommendationsWithBusinesses);
+
+        await markAllRecommendationsAsRead(user.uid);
       } catch (error) {
         console.error('Error loading recommendations:', error);
       } finally {
@@ -71,6 +72,15 @@ export default function RecommendationsScreen() {
         </Text>
       </View>
 
+      <View style={styles.resultsHeader}>
+        <Text style={styles.resultsTitle}>Recommended</Text>
+        {!loading && user && (
+          <Text style={styles.resultsCount}>
+            {recommendations.length} total
+          </Text>
+        )}
+      </View>
+
       <View style={styles.section}>
         {loading ? (
           <Text style={styles.helperText}>Loading recommendations...</Text>
@@ -88,16 +98,27 @@ export default function RecommendationsScreen() {
           recommendations.map((recommendation) => (
             <Pressable
               key={recommendation.id}
-              style={styles.recommendationCard}
+              style={[
+                styles.recommendationCard,
+                !recommendation.read && styles.unreadCard,
+              ]}
               onPress={() => {
                 if (recommendation.business) {
                   router.push(`/business/${recommendation.business.slug}` as any);
                 }
               }}
             >
-              <Text style={styles.recommendedBy}>
-                Recommended by {recommendation.fromEmail}
-              </Text>
+              <View style={styles.cardTopRow}>
+                <Text style={styles.recommendedBy}>
+                  Recommended by {recommendation.fromEmail}
+                </Text>
+
+                {!recommendation.read && (
+                  <View style={styles.unreadPill}>
+                    <Text style={styles.unreadPillText}>New</Text>
+                  </View>
+                )}
+              </View>
 
               <Text style={styles.businessName}>
                 {recommendation.business?.name ?? 'Business not found'}
@@ -154,6 +175,21 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#5f5f58',
   },
+  resultsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  resultsTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#111',
+  },
+  resultsCount: {
+    fontSize: 14,
+    color: '#77776f',
+  },
   section: {
     marginBottom: 18,
   },
@@ -169,11 +205,33 @@ const styles = StyleSheet.create({
     borderColor: '#ececec',
     marginBottom: 14,
   },
+  unreadCard: {
+    borderColor: '#cfead8',
+    backgroundColor: '#fbfffc',
+  },
+  cardTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 12,
+  },
   recommendedBy: {
+    flex: 1,
     fontSize: 13,
     fontWeight: '700',
     color: '#6b6b63',
-    marginBottom: 8,
+  },
+  unreadPill: {
+    backgroundColor: '#e9f7ef',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  unreadPillText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#198754',
   },
   businessName: {
     fontSize: 20,

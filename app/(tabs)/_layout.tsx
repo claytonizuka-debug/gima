@@ -1,11 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { useAuth } from '@/context/AuthContext';
 import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
+import { subscribeToUnreadRecommendationCount } from '../../services/recommendationService';
 
 export default function TabLayout() {
+  const { user } = useAuth();
   const { savedSlugs } = useSavedBusinesses();
+
+  const [unreadRecommendationsCount, setUnreadRecommendationsCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) {
+      setUnreadRecommendationsCount(0);
+      return;
+    }
+
+    const unsubscribe = subscribeToUnreadRecommendationCount(
+      user.uid,
+      setUnreadRecommendationsCount
+    );
+
+    return unsubscribe;
+  }, [user]);
 
   return (
     <Tabs
@@ -23,6 +42,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="discover"
         options={{
@@ -32,6 +52,7 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="saved"
         options={{
@@ -42,6 +63,7 @@ export default function TabLayout() {
           tabBarBadge: savedSlugs.length > 0 ? savedSlugs.length : undefined,
         }}
       />
+
       <Tabs.Screen
         name="recommendations"
         options={{
@@ -49,8 +71,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="notifications" size={size} color={color} />
           ),
+          tabBarBadge:
+            unreadRecommendationsCount > 0
+              ? unreadRecommendationsCount
+              : undefined,
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
