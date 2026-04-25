@@ -1,5 +1,6 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BusinessCard } from '@/components/BusinessCard';
 import { SkeletonCard } from '@/components/SkeletonCard';
@@ -8,6 +9,7 @@ import { useBusinesses } from '@/hooks/useBusinesses';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { businesses, loading } = useBusinesses();
 
   const openNowBusinesses = businesses.filter((b) => b.section === 'Open Now');
@@ -16,7 +18,10 @@ export default function HomeScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: insets.top + 18 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
@@ -107,11 +112,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 44,
     paddingBottom: 36,
-  },  
+  },
   hero: {
-    marginTop: 28,
     marginBottom: 28,
   },
   eyebrow: {

@@ -1,6 +1,7 @@
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
@@ -31,6 +32,7 @@ function formatRecommendationDate(createdAt: string) {
 }
 
 export default function RecommendationsScreen() {
+  const insets = useSafeAreaInsets();
   const { user, loading: authLoading } = useAuth();
 
   const [recommendations, setRecommendations] = useState<RecommendationWithBusiness[]>([]);
@@ -100,7 +102,10 @@ export default function RecommendationsScreen() {
   return (
     <ScrollView
       style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: insets.top + 18 },
+      ]}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
@@ -194,7 +199,6 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 72,
     paddingBottom: 36,
   },
   hero: {

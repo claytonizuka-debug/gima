@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
@@ -7,23 +8,43 @@ import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 import { logOut } from '../../services/authService';
 
 export default function ProfileScreen() {
+  const insets = useSafeAreaInsets();
   const { user, loading } = useAuth();
   const { savedSlugs } = useSavedBusinesses();
 
-  async function handleLogout() {
-    await logOut();
+  function handleLogout() {
+    Alert.alert('Log out', 'Are you sure you want to log out?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Log Out',
+        style: 'destructive',
+        onPress: async () => {
+          await logOut();
+        },
+      },
+    ]);
   }
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { paddingTop: insets.top + 18 }]}>
         <Text style={styles.loadingText}>Loading profile...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          paddingTop: insets.top + 18,
+        },
+      ]}
+    >
       <View style={styles.hero}>
         <Text style={styles.eyebrow}>ACCOUNT</Text>
         <Text style={styles.title}>Profile</Text>
@@ -88,7 +109,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: GimaColors.background,
     paddingHorizontal: 20,
-    paddingTop: 72,
   },
   hero: {
     marginBottom: 28,
@@ -170,20 +190,19 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#fff',
   },
-logoutButton: {
-  backgroundColor: GimaColors.background,
-  borderWidth: 1,
-  borderColor: GimaColors.border,
-  paddingVertical: 14,
-  borderRadius: 12,
-  alignItems: 'center',
-},
-
-logoutButtonText: {
-  color: GimaColors.mutedText,
-  fontSize: 15,
-  fontWeight: '700',
-},
+  logoutButton: {
+    backgroundColor: GimaColors.background,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  logoutButtonText: {
+    color: GimaColors.mutedText,
+    fontSize: 15,
+    fontWeight: '700',
+  },
   loginButton: {
     backgroundColor: GimaColors.coral,
     paddingVertical: 14,
