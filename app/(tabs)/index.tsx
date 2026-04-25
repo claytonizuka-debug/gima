@@ -10,13 +10,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const { businesses, loading } = useBusinesses();
 
-  const openNowBusinesses = businesses.filter(
-    (b) => b.section === 'Open Now'
-  );
-
-  const happeningTodayBusinesses = businesses.filter(
-    (b) => b.section === 'Happening Today'
-  );
+  const openNowBusinesses = businesses.filter((b) => b.section === 'Open Now');
+  const happeningTodayBusinesses = businesses.filter((b) => b.section === 'Happening Today');
 
   return (
     <ScrollView
@@ -31,7 +26,6 @@ export default function HomeScreen() {
           Discover local spots, daily finds, and recommendations across the Marianas.
         </Text>
 
-        {/* FIXED PILLS */}
         <View style={styles.pillRow}>
           <View style={styles.pill}>
             <Text style={styles.pillText}>Ocean</Text>
@@ -71,7 +65,6 @@ export default function HomeScreen() {
           <Text style={styles.helperText}>No businesses found.</Text>
         )}
 
-        {/* FIXED CTA */}
         <Pressable style={styles.ctaButton} onPress={() => router.push('/discover')}>
           <Text style={styles.ctaButtonText}>Explore More</Text>
         </Pressable>
@@ -114,10 +107,9 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingTop: 44,
     paddingBottom: 36,
-  },
-
+  },  
   hero: {
     marginTop: 28,
     marginBottom: 28,
@@ -140,14 +132,11 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     lineHeight: 24,
   },
-
   pillRow: {
     flexDirection: 'row',
     marginTop: 16,
     gap: 8,
   },
-
-  // FIX: remove opacity and add border
   pill: {
     backgroundColor: GimaColors.card,
     paddingHorizontal: 12,
@@ -161,7 +150,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 13,
   },
-
   section: {
     marginBottom: 28,
   },
@@ -180,20 +168,16 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: GimaColors.mutedText,
   },
-
   sectionDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: GimaColors.coral,
   },
-
   helperText: {
     fontSize: 15,
     color: GimaColors.mutedText,
   },
-
-  // FIX: solid coral button
   ctaButton: {
     marginTop: 12,
     backgroundColor: GimaColors.coral,
@@ -202,7 +186,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ctaButtonText: {
-    color: '#111', // darker text for light coral
-    fontWeight: '700',
+    color: '#fff',
+    fontWeight: '800',
   },
 });

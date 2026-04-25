@@ -49,8 +49,8 @@ export default function ProfileScreen() {
               </View>
             </View>
 
-            <Pressable style={styles.primaryButton} onPress={handleLogout}>
-              <Text style={styles.primaryButtonText}>Log Out</Text>
+            <Pressable style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutButtonText}>Log Out</Text>
             </Pressable>
           </>
         ) : (
@@ -62,8 +62,8 @@ export default function ProfileScreen() {
               Log in or create an account to save businesses and receive recommendations.
             </Text>
 
-            <Pressable style={styles.primaryButton} onPress={() => router.push('/auth')}>
-              <Text style={styles.primaryButtonText}>Log In / Sign Up</Text>
+            <Pressable style={styles.loginButton} onPress={() => router.push('/auth')}>
+              <Text style={styles.loginButtonText}>Log In / Sign Up</Text>
             </Pressable>
           </>
         )}
@@ -88,18 +88,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: GimaColors.background,
     paddingHorizontal: 20,
-    paddingTop: 56,
+    paddingTop: 72,
   },
-
   hero: {
-    marginBottom: 24,
+    marginBottom: 28,
   },
   eyebrow: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
     color: GimaColors.mutedText,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   title: {
     fontSize: 36,
@@ -112,7 +111,6 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     lineHeight: 24,
   },
-
   card: {
     backgroundColor: GimaColors.card,
     borderRadius: 18,
@@ -140,13 +138,12 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginBottom: 20,
   },
-
   statCard: {
     backgroundColor: GimaColors.background,
     borderRadius: 16,
     padding: 16,
-    borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
     marginBottom: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -162,7 +159,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: GimaColors.mutedText,
   },
-
   countPill: {
     backgroundColor: GimaColors.coral,
     paddingHorizontal: 12,
@@ -172,18 +168,31 @@ const styles = StyleSheet.create({
   countPillText: {
     fontSize: 13,
     fontWeight: '900',
-    color: GimaColors.text,
+    color: '#fff',
   },
+logoutButton: {
+  backgroundColor: GimaColors.background,
+  borderWidth: 1,
+  borderColor: GimaColors.border,
+  paddingVertical: 14,
+  borderRadius: 12,
+  alignItems: 'center',
+},
 
-  primaryButton: {
-    backgroundColor: GimaColors.ocean,
+logoutButtonText: {
+  color: GimaColors.mutedText,
+  fontSize: 15,
+  fontWeight: '700',
+},
+  loginButton: {
+    backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
   },
-  primaryButtonText: {
+  loginButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

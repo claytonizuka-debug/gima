@@ -25,7 +25,6 @@ function formatRecommendationDate(createdAt: string) {
   return date.toLocaleString([], {
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
   });
@@ -112,19 +111,6 @@ export default function RecommendationsScreen() {
         </Text>
       </View>
 
-      <View style={styles.resultsHeader}>
-        <View>
-          <Text style={styles.resultsTitle}>Shared Places</Text>
-          <Text style={styles.resultsCaption}>Local tips from your circle</Text>
-        </View>
-
-        {!loading && user && (
-          <View style={styles.countPill}>
-            <Text style={styles.countPillText}>{recommendations.length}</Text>
-          </View>
-        )}
-      </View>
-
       <View style={styles.section}>
         {loading ? (
           <Text style={styles.helperText}>Loading recommendations...</Text>
@@ -208,20 +194,18 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 28,
+    paddingTop: 72,
     paddingBottom: 36,
   },
-
   hero: {
-    marginTop: 28,
-    marginBottom: 22,
+    marginBottom: 28,
   },
   eyebrow: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
     color: GimaColors.mutedText,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   title: {
     fontSize: 36,
@@ -234,39 +218,6 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     lineHeight: 24,
   },
-
-  resultsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-    gap: 12,
-  },
-  resultsTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: GimaColors.ocean,
-  },
-  resultsCaption: {
-    fontSize: 13,
-    color: GimaColors.mutedText,
-    marginTop: 2,
-  },
-
-  countPill: {
-    backgroundColor: GimaColors.card,
-    borderWidth: 1,
-    borderColor: GimaColors.coral,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  countPillText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: GimaColors.text,
-  },
-
   section: {
     marginBottom: 18,
   },
@@ -274,7 +225,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: GimaColors.mutedText,
   },
-
   recommendationCard: {
     backgroundColor: GimaColors.card,
     borderRadius: 18,
@@ -285,8 +235,8 @@ const styles = StyleSheet.create({
   },
   unreadCard: {
     borderColor: GimaColors.coral,
+    borderWidth: 1.5,
   },
-
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -307,7 +257,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GimaColors.mutedText,
   },
-
   unreadPill: {
     backgroundColor: GimaColors.coral,
     paddingHorizontal: 10,
@@ -317,9 +266,8 @@ const styles = StyleSheet.create({
   unreadPillText: {
     fontSize: 12,
     fontWeight: '800',
-    color: GimaColors.text,
+    color: '#fff',
   },
-
   businessName: {
     fontSize: 20,
     fontWeight: '800',
@@ -332,13 +280,12 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginBottom: 10,
   },
-
   messageBubble: {
     backgroundColor: GimaColors.background,
     borderRadius: 14,
     padding: 12,
-    borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
   },
   messageLabel: {
     fontSize: 11,
@@ -354,7 +301,6 @@ const styles = StyleSheet.create({
     color: GimaColors.text,
     fontStyle: 'italic',
   },
-
   emptyState: {
     backgroundColor: GimaColors.card,
     borderRadius: 18,
@@ -374,9 +320,8 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginBottom: 18,
   },
-
   primaryButton: {
-    backgroundColor: GimaColors.ocean,
+    backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -384,6 +329,6 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

@@ -29,9 +29,7 @@ export default function AuthScreen() {
     }
   }, [user]);
 
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
   async function handleSubmit() {
     const cleanEmail = email.trim().toLowerCase();
@@ -80,9 +78,13 @@ export default function AuthScreen() {
         </View>
 
         <View style={styles.card}>
+          {/* Toggle */}
           <View style={styles.modeRow}>
             <Pressable
-              style={[styles.modeButton, isLoginMode && styles.activeModeButton]}
+              style={[
+                styles.modeButton,
+                isLoginMode && styles.activeModeButton,
+              ]}
               onPress={() => setIsLoginMode(true)}
             >
               <Text
@@ -96,7 +98,10 @@ export default function AuthScreen() {
             </Pressable>
 
             <Pressable
-              style={[styles.modeButton, !isLoginMode && styles.activeModeButton]}
+              style={[
+                styles.modeButton,
+                !isLoginMode && styles.activeModeButton,
+              ]}
               onPress={() => setIsLoginMode(false)}
             >
               <Text
@@ -131,6 +136,7 @@ export default function AuthScreen() {
             onChangeText={setPassword}
           />
 
+          {/* Coral button */}
           <Pressable style={styles.primaryButton} onPress={handleSubmit}>
             <Text style={styles.primaryButtonText}>
               {isLoginMode ? 'Log In' : 'Create Account'}
@@ -158,9 +164,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: 20,
-    paddingTop: 64,
+    paddingTop: 92,
     paddingBottom: 32,
-    justifyContent: 'center',
   },
 
   hero: {
@@ -196,28 +201,33 @@ const styles = StyleSheet.create({
   modeRow: {
     flexDirection: 'row',
     backgroundColor: GimaColors.background,
-    borderRadius: 14,
-    padding: 4,
+    borderRadius: 16,
+    padding: 5,
     marginBottom: 20,
     borderWidth: 1,
     borderColor: GimaColors.border,
   },
   modeButton: {
     flex: 1,
-    paddingVertical: 11,
+    paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 11,
+    borderRadius: 12,
   },
+
+  // ocean-light toggle
   activeModeButton: {
-    backgroundColor: GimaColors.ocean,
+    backgroundColor: GimaColors.oceanLight,
+    borderWidth: 1,
+    borderColor: GimaColors.ocean,
   },
+
   modeButtonText: {
     fontSize: 15,
     fontWeight: '800',
     color: GimaColors.mutedText,
   },
   activeModeButtonText: {
-    color: '#fff',
+    color: GimaColors.ocean,
   },
 
   label: {
@@ -241,7 +251,7 @@ const styles = StyleSheet.create({
   },
 
   primaryButton: {
-    backgroundColor: GimaColors.ocean,
+    backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
