@@ -1,31 +1,53 @@
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  orderBy,
+  query,
+} from 'firebase/firestore';
+
 import { db } from '../firebaseConfig';
 
 export type Business = {
+  id: string;
   slug: string;
   name: string;
-  category: string;
-  description: string;
   shortDescription: string;
-  hours: string;
-  location: string;
+  description: string;
+  image: string;
+  category: string;
   section: string;
   status: string;
-  image: string;
+  hours: string;
+  location: string;
+
+  phone?: string;
+  website?: string;
+  priceRange?: string;
 };
 
 export async function getBusinesses(): Promise<Business[]> {
-  const snapshot = await getDocs(collection(db, 'businesses'));
-  return snapshot.docs.map((doc) => doc.data() as Business);
+  const businessesRef = collection(db, 'businesses');
+  const businessesQuery = query(businessesRef, orderBy('name', 'asc'));
+  const snapshot = await getDocs(businessesQuery);
+
+  return snapshot.docs.map((docItem) => ({
+    id: docItem.id,
+    ...(docItem.data() as Omit<Business, 'id'>),
+  }));
 }
 
 export async function getBusinessBySlug(slug: string): Promise<Business | null> {
-  const docRef = doc(db, 'businesses', slug);
-  const snapshot = await getDoc(docRef);
+  const businessRef = doc(db, 'businesses', slug);
+  const snapshot = await getDoc(businessRef);
 
   if (!snapshot.exists()) {
     return null;
   }
 
-  return snapshot.data() as Business;
+  return {
+    id: snapshot.id,
+    ...(snapshot.data() as Omit<Business, 'id'>),
+  };
 }

@@ -185,6 +185,22 @@ export default function BusinessDetailScreen() {
     ]);
   }
 
+  function handleCallBusiness() {
+    if (!safeBusiness.phone) return;
+
+    Linking.openURL(`tel:${safeBusiness.phone}`);
+  }
+
+  function handleOpenWebsite() {
+    if (!safeBusiness.website) return;
+
+    const websiteUrl = safeBusiness.website.startsWith('http')
+      ? safeBusiness.website
+      : `https://${safeBusiness.website}`;
+
+    Linking.openURL(websiteUrl);
+  }
+
   return (
     <>
       <ScrollView
@@ -193,6 +209,11 @@ export default function BusinessDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Image source={{ uri: safeBusiness.image }} style={styles.image} />
+
+        <View style={styles.metaRow}>
+          <Text style={styles.categoryPill}>{safeBusiness.category}</Text>
+          <Text style={styles.statusPill}>{safeBusiness.status}</Text>
+        </View>
 
         <Text style={styles.title}>{safeBusiness.name}</Text>
         <Text style={styles.description}>{safeBusiness.description}</Text>
@@ -239,6 +260,62 @@ export default function BusinessDetailScreen() {
           >
             <Text style={styles.directionsButtonText}>Get Directions</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.infoCard}>
+          <Text style={styles.label}>Details</Text>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Category</Text>
+            <Text style={styles.detailValue}>{safeBusiness.category}</Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Price</Text>
+            <Text style={styles.detailValue}>
+              {safeBusiness.priceRange || 'Not listed'}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <Text style={styles.detailLabel}>Phone</Text>
+            <Text style={styles.detailValue}>
+              {safeBusiness.phone || 'Not listed'}
+            </Text>
+          </View>
+
+          <View style={styles.detailRowLast}>
+            <Text style={styles.detailLabel}>Website</Text>
+            <Text style={styles.detailValue}>
+              {safeBusiness.website || 'Not listed'}
+            </Text>
+          </View>
+
+          <View style={styles.detailButtonRow}>
+            {safeBusiness.phone ? (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.utilityButton,
+                  pressed && styles.pressedButton,
+                ]}
+                onPress={handleCallBusiness}
+              >
+                <Text style={styles.utilityButtonText}>Call</Text>
+              </Pressable>
+            ) : null}
+
+            {safeBusiness.website ? (
+              <Pressable
+                style={({ pressed }) => [
+                  styles.utilityButton,
+                  pressed && styles.pressedButton,
+                ]}
+                onPress={handleOpenWebsite}
+              >
+                <Text style={styles.utilityButtonText}>Website</Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
       </ScrollView>
 
@@ -322,6 +399,31 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
   },
+  metaRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 10,
+  },
+  categoryPill: {
+    backgroundColor: GimaColors.oceanLight,
+    color: GimaColors.ocean,
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  statusPill: {
+    backgroundColor: GimaColors.leaf,
+    color: '#fff',
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: '800',
+  },
   title: {
     fontSize: 28,
     fontWeight: '800',
@@ -334,7 +436,6 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginBottom: 12,
   },
-
   actionRow: {
     flexDirection: 'row',
     gap: 8,
@@ -372,7 +473,6 @@ const styles = StyleSheet.create({
   pressedLightButton: {
     opacity: 0.6,
   },
-
   infoCard: {
     backgroundColor: GimaColors.card,
     padding: 16,
@@ -407,7 +507,45 @@ const styles = StyleSheet.create({
     color: GimaColors.coral,
     fontWeight: '800',
   },
-
+  detailRow: {
+    borderBottomWidth: 1,
+    borderBottomColor: GimaColors.border,
+    paddingVertical: 10,
+  },
+  detailRowLast: {
+    paddingVertical: 10,
+  },
+  detailLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: GimaColors.mutedText,
+    marginBottom: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  detailValue: {
+    fontSize: 15,
+    color: GimaColors.text,
+    lineHeight: 21,
+  },
+  detailButtonRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 8,
+  },
+  utilityButton: {
+    flex: 1,
+    backgroundColor: GimaColors.background,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  utilityButtonText: {
+    color: GimaColors.coral,
+    fontWeight: '800',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.3)',
@@ -468,7 +606,6 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.65,
   },
-
   loadingContainer: {
     flex: 1,
     backgroundColor: GimaColors.background,

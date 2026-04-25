@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BusinessCard } from '@/components/BusinessCard';
@@ -8,22 +8,36 @@ import { SkeletonCard } from '@/components/SkeletonCard';
 import { GimaColors } from '@/constants/gimaTheme';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
+const FILTERS = ['All', 'Food', 'Fitness', 'Activities', 'Beaches', 'Events'];
+
 export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
+
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { businesses, loading } = useBusinesses();
 
-  const filteredBusinesses = businesses.filter((business) => {
-    const query = searchQuery.toLowerCase();
+  const filteredBusinesses = useMemo(() => {
+    return businesses.filter((business) => {
+      const query = searchQuery.trim().toLowerCase();
+      const category = business.category.toLowerCase();
 
-    return (
-      business.name.toLowerCase().includes(query) ||
-      business.category.toLowerCase().includes(query) ||
-      business.location.toLowerCase().includes(query) ||
-      business.shortDescription.toLowerCase().includes(query)
-    );
-  });
+      const matchesSearch =
+        !query ||
+        business.name.toLowerCase().includes(query) ||
+        category.includes(query) ||
+        business.location.toLowerCase().includes(query) ||
+        business.shortDescription.toLowerCase().includes(query);
+
+      const matchesFilter =
+        activeFilter === 'All' ||
+        category === activeFilter.toLowerCase() ||
+        category.includes(activeFilter.toLowerCase());
+
+      return matchesSearch && matchesFilter;
+    });
+  }, [businesses, searchQuery, activeFilter]);
 
   return (
     <ScrollView
@@ -50,10 +64,43 @@ export default function DiscoverScreen() {
         onChangeText={setSearchQuery}
       />
 
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {FILTERS.map((filter) => {
+          const isActive = activeFilter === filter;
+
+          return (
+            <Pressable
+              key={filter}
+              style={({ pressed }) => [
+                styles.filterPill,
+                isActive && styles.activeFilterPill,
+                pressed && styles.pressedButton,
+              ]}
+              onPress={() => setActiveFilter(filter)}
+            >
+              <Text
+                style={[
+                  styles.filterPillText,
+                  isActive && styles.activeFilterPillText,
+                ]}
+              >
+                {filter}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+
       <View style={styles.resultsHeader}>
         <View>
           <Text style={styles.resultsTitle}>Results</Text>
-          <Text style={styles.resultsCaption}>Find your next local stop</Text>
+          <Text style={styles.resultsCaption}>
+            {activeFilter === 'All' ? 'Find your next local stop' : activeFilter}
+          </Text>
         </View>
 
         {!loading && (
@@ -80,7 +127,7 @@ export default function DiscoverScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No matches found</Text>
             <Text style={styles.emptyText}>
-              Try searching another keyword, business type, or village.
+              Try another keyword, category, or location.
             </Text>
           </View>
         )}
@@ -126,9 +173,37 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 16,
     color: GimaColors.text,
-    marginBottom: 18,
+    marginBottom: 14,
     borderWidth: 1.5,
     borderColor: GimaColors.coral,
+  },
+  filterRow: {
+    gap: 8,
+    paddingBottom: 18,
+  },
+  filterPill: {
+    backgroundColor: GimaColors.card,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+  },
+  activeFilterPill: {
+    backgroundColor: GimaColors.coral,
+    borderColor: GimaColors.coral,
+  },
+  filterPillText: {
+    color: GimaColors.text,
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  activeFilterPillText: {
+    color: '#fff',
+  },
+  pressedButton: {
+    opacity: 0.75,
+    transform: [{ scale: 0.98 }],
   },
   resultsHeader: {
     flexDirection: 'row',
