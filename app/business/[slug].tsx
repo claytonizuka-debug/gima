@@ -199,17 +199,22 @@ export default function BusinessDetailScreen() {
 
         <View style={styles.actionRow}>
           <Pressable
-            style={[styles.saveButton, saved && styles.savedButton]}
+            style={({ pressed }) => [
+              styles.saveButton,
+              saved && styles.savedButton,
+              pressed && styles.pressedButton,
+            ]}
             onPress={handleSave}
             disabled={savedLoading}
           >
-            <Text style={styles.saveButtonText}>
-              {saved ? 'Saved' : 'Save'}
-            </Text>
+            <Text style={styles.saveButtonText}>{saved ? 'Saved' : 'Save'}</Text>
           </Pressable>
 
           <Pressable
-            style={styles.recommendButton}
+            style={({ pressed }) => [
+              styles.recommendButton,
+              pressed && styles.pressedButton,
+            ]}
             onPress={handleOpenRecommendModal}
           >
             <Text style={styles.recommendButtonText}>Recommend</Text>
@@ -225,7 +230,13 @@ export default function BusinessDetailScreen() {
           <Text style={styles.label}>Location</Text>
           <Text style={styles.infoText}>{safeBusiness.location}</Text>
 
-          <Pressable style={styles.directionsButton} onPress={handleOpenMaps}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.directionsButton,
+              pressed && styles.pressedButton,
+            ]}
+            onPress={handleOpenMaps}
+          >
             <Text style={styles.directionsButtonText}>Get Directions</Text>
           </Pressable>
         </View>
@@ -262,7 +273,11 @@ export default function BusinessDetailScreen() {
             />
 
             <Pressable
-              style={[styles.modalPrimaryButton, sendingRecommendation && styles.disabledButton]}
+              style={({ pressed }) => [
+                styles.modalPrimaryButton,
+                sendingRecommendation && styles.disabledButton,
+                pressed && styles.pressedButton,
+              ]}
               onPress={handleSend}
               disabled={sendingRecommendation}
             >
@@ -272,7 +287,10 @@ export default function BusinessDetailScreen() {
             </Pressable>
 
             <Pressable
-              style={styles.cancelButton}
+              style={({ pressed }) => [
+                styles.cancelButton,
+                pressed && styles.pressedLightButton,
+              ]}
               onPress={() => {
                 setRecommendModalVisible(false);
                 setRecipientEmail('');
@@ -314,18 +332,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: GimaColors.mutedText,
-    marginBottom: 16,
+    marginBottom: 12,
   },
 
   actionRow: {
     flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16,
+    gap: 8,
+    marginBottom: 12,
   },
   saveButton: {
     flex: 1,
     backgroundColor: GimaColors.ocean,
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },
@@ -336,24 +354,30 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: '800',
   },
-recommendButton: {
-  flex: 1,
-  backgroundColor: GimaColors.coral,
-  paddingVertical: 14,
-  borderRadius: 12,
-  alignItems: 'center',
-},
-
-recommendButtonText: {
-  color: '#fff',
-  fontWeight: '800',
-},
+  recommendButton: {
+    flex: 1,
+    backgroundColor: GimaColors.coral,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  recommendButtonText: {
+    color: '#fff',
+    fontWeight: '800',
+  },
+  pressedButton: {
+    opacity: 0.78,
+    transform: [{ scale: 0.98 }],
+  },
+  pressedLightButton: {
+    opacity: 0.6,
+  },
 
   infoCard: {
     backgroundColor: GimaColors.card,
     padding: 16,
     borderRadius: 12,
-    marginBottom: 10,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: GimaColors.border,
   },
@@ -370,20 +394,19 @@ recommendButtonText: {
     lineHeight: 22,
     color: GimaColors.text,
   },
-directionsButton: {
-  backgroundColor: GimaColors.background,
-  borderWidth: 1.5,
-  borderColor: GimaColors.coral,
-  paddingVertical: 12,
-  borderRadius: 10,
-  alignItems: 'center',
-  marginTop: 14,
-},
-
-directionsButtonText: {
-  color: GimaColors.coral,
-  fontWeight: '800',
-},
+  directionsButton: {
+    backgroundColor: GimaColors.background,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  directionsButtonText: {
+    color: GimaColors.coral,
+    fontWeight: '800',
+  },
 
   modalOverlay: {
     flex: 1,
@@ -436,6 +459,7 @@ directionsButtonText: {
   cancelButton: {
     alignItems: 'center',
     paddingVertical: 8,
+    borderRadius: 10,
   },
   cancelButtonText: {
     color: GimaColors.mutedText,
