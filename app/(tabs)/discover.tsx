@@ -1,6 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BusinessCard } from '@/components/BusinessCard';
@@ -8,7 +15,7 @@ import { SkeletonCard } from '@/components/SkeletonCard';
 import { GimaColors } from '@/constants/gimaTheme';
 import { useBusinesses } from '@/hooks/useBusinesses';
 
-const FILTERS = ['All', 'Food', 'Fitness', 'Activities', 'Beaches', 'Events'];
+const FILTERS = ['All', 'Food', 'Fitness', 'Beaches', 'Attractions', 'Events', 'Shopping', 'Services', 'Hotels'];
 
 export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +28,7 @@ export default function DiscoverScreen() {
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
       const query = searchQuery.trim().toLowerCase();
-      const category = business.category.toLowerCase();
+      const category = (business.category || '').toLowerCase();
 
       const matchesSearch =
         !query ||
@@ -32,7 +39,6 @@ export default function DiscoverScreen() {
 
       const matchesFilter =
         activeFilter === 'All' ||
-        category === activeFilter.toLowerCase() ||
         category.includes(activeFilter.toLowerCase());
 
       return matchesSearch && matchesFilter;
@@ -99,13 +105,17 @@ export default function DiscoverScreen() {
         <View>
           <Text style={styles.resultsTitle}>Results</Text>
           <Text style={styles.resultsCaption}>
-            {activeFilter === 'All' ? 'Find your next local stop' : activeFilter}
+            {activeFilter === 'All'
+              ? 'Find your next local stop'
+              : activeFilter}
           </Text>
         </View>
 
         {!loading && (
           <View style={styles.countPill}>
-            <Text style={styles.countPillText}>{filteredBusinesses.length} found</Text>
+            <Text style={styles.countPillText}>
+              {filteredBusinesses.length} found
+            </Text>
           </View>
         )}
       </View>
@@ -120,7 +130,9 @@ export default function DiscoverScreen() {
               name={business.name}
               description={business.shortDescription}
               image={business.image}
-              onPress={() => router.push(`/business/${business.slug}` as any)}
+              onPress={() =>
+                router.push(`/business/${business.slug}` as any)
+              }
             />
           ))
         ) : (

@@ -1,5 +1,13 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  ImageBackground,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BusinessCard } from '@/components/BusinessCard';
@@ -12,8 +20,13 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { businesses, loading } = useBusinesses();
 
-  const openNowBusinesses = businesses.filter((b) => b.section === 'Open Now');
-  const happeningTodayBusinesses = businesses.filter((b) => b.section === 'Happening Today');
+  const openNowBusinesses = businesses.filter(
+    (b) => b.section === 'Open Now'
+  );
+
+  const happeningTodayBusinesses = businesses.filter(
+    (b) => b.section === 'Happening Today'
+  );
 
   return (
     <ScrollView
@@ -24,38 +37,45 @@ export default function HomeScreen() {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.hero}>
-        <Text style={styles.eyebrow}>SAIPAN • CNMI</Text>
-        <Text style={styles.title}>Gima</Text>
-        <Text style={styles.subtitle}>
-          Discover local spots, daily finds, and recommendations across the Marianas.
-        </Text>
-
-        <View style={styles.pillRow}>
-          <View style={styles.pill}>
-            <Text style={styles.pillText}>Ocean</Text>
-          </View>
-          <View style={styles.pill}>
-            <Text style={styles.pillText}>Food</Text>
-          </View>
-          <View style={styles.pill}>
-            <Text style={styles.pillText}>Explore</Text>
-          </View>
-        </View>
+      {/* 🔥 HERO CARD */}
+      <View style={styles.heroCard}>
+        <ImageBackground
+          source={{
+            uri: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200',
+          }}
+          style={styles.heroImage}
+          imageStyle={styles.heroImageStyle}
+        >
+          <LinearGradient
+            colors={['transparent', 'rgba(0,0,0,0.65)']}
+            style={styles.heroOverlay}
+          >
+            <Text style={styles.heroEyebrow}>SAIPAN • CNMI</Text>
+            <Text style={styles.heroTitle}>Gima</Text>
+            <Text style={styles.heroSubtitle}>
+              Discover local spots, daily finds, and island recommendations.
+            </Text>
+          </LinearGradient>
+        </ImageBackground>
       </View>
 
+      {/* OPEN NOW */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
             <Text style={styles.sectionTitle}>Open Now</Text>
-            <Text style={styles.sectionCaption}>Ready when you are</Text>
+            <Text style={styles.sectionCaption}>
+              Ready when you are
+            </Text>
           </View>
 
           <View style={styles.sectionDot} />
         </View>
 
         {loading ? (
-          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))
         ) : openNowBusinesses.length > 0 ? (
           openNowBusinesses.map((business) => (
             <BusinessCard
@@ -63,30 +83,44 @@ export default function HomeScreen() {
               name={business.name}
               description={business.shortDescription}
               image={business.image}
-              onPress={() => router.push(`/business/${business.slug}` as any)}
+              onPress={() =>
+                router.push(`/business/${business.slug}` as any)
+              }
             />
           ))
         ) : (
-          <Text style={styles.helperText}>No businesses found.</Text>
+          <Text style={styles.helperText}>
+            No businesses found.
+          </Text>
         )}
 
-        <Pressable style={styles.ctaButton} onPress={() => router.push('/discover')}>
+        <Pressable
+          style={styles.ctaButton}
+          onPress={() => router.push('/discover')}
+        >
           <Text style={styles.ctaButtonText}>Explore More</Text>
         </Pressable>
       </View>
 
+      {/* HAPPENING TODAY */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <View>
-            <Text style={styles.sectionTitle}>Happening Today</Text>
-            <Text style={styles.sectionCaption}>Island activity</Text>
+            <Text style={styles.sectionTitle}>
+              Happening Today
+            </Text>
+            <Text style={styles.sectionCaption}>
+              Island activity
+            </Text>
           </View>
 
           <View style={styles.sectionDot} />
         </View>
 
         {loading ? (
-          Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 2 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))
         ) : happeningTodayBusinesses.length > 0 ? (
           happeningTodayBusinesses.map((business) => (
             <BusinessCard
@@ -94,11 +128,15 @@ export default function HomeScreen() {
               name={business.name}
               description={business.shortDescription}
               image={business.image}
-              onPress={() => router.push(`/business/${business.slug}` as any)}
+              onPress={() =>
+                router.push(`/business/${business.slug}` as any)
+              }
             />
           ))
         ) : (
-          <Text style={styles.helperText}>No businesses found.</Text>
+          <Text style={styles.helperText}>
+            No businesses found.
+          </Text>
         )}
       </View>
     </ScrollView>
@@ -114,45 +152,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 36,
   },
-  hero: {
+
+  /* HERO */
+  heroCard: {
+    borderRadius: 20,
+    overflow: 'hidden',
     marginBottom: 28,
+
+    // 🔥 make it distinct
+    borderWidth: 2,
+    borderColor: 'rgba(240, 123, 61, 0.6)',
+
+    // subtle elevation
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+
+    elevation: 4, // Android
   },
-  eyebrow: {
+  heroImage: {
+    height: 200,
+  },
+  heroImageStyle: {
+    borderRadius: 18,
+  },
+  heroOverlay: {
+    padding: 16,
+    justifyContent: 'flex-end',
+    height: '100%',
+  },
+  heroEyebrow: {
     fontSize: 12,
     fontWeight: '700',
     letterSpacing: 1.2,
-    color: GimaColors.mutedText,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#fff',
     marginBottom: 6,
   },
-  title: {
-    fontSize: 38,
-    fontWeight: '900',
-    color: GimaColors.ocean,
-    marginBottom: 8,
+  heroSubtitle: {
+    fontSize: 14,
+    color: '#f1f1f1',
+    lineHeight: 20,
   },
-  subtitle: {
-    fontSize: 16,
-    color: GimaColors.mutedText,
-    lineHeight: 24,
-  },
-  pillRow: {
-    flexDirection: 'row',
-    marginTop: 16,
-    gap: 8,
-  },
-  pill: {
-    backgroundColor: GimaColors.card,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: GimaColors.coral,
-  },
-  pillText: {
-    color: GimaColors.coral,
-    fontWeight: '700',
-    fontSize: 13,
-  },
+
+  /* SECTION */
   section: {
     marginBottom: 28,
   },
@@ -177,10 +226,12 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     backgroundColor: GimaColors.coral,
   },
+
   helperText: {
     fontSize: 15,
     color: GimaColors.mutedText,
   },
+
   ctaButton: {
     marginTop: 12,
     backgroundColor: GimaColors.coral,
