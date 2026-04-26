@@ -1,22 +1,32 @@
-import { Ionicons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Swipeable } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { GimaColors } from '@/constants/gimaTheme';
-import { useAuth } from '@/context/AuthContext';
-import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
+import { GimaColors } from "@/constants/gimaTheme";
+import { useAuth } from "@/context/AuthContext";
+import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
 
-import { getBusinessBySlug, type Business } from '../../services/businessService';
+import {
+  getBusinessBySlug,
+  type Business,
+} from "../../services/businessService";
 import {
   deleteRecommendation,
   getRecommendationsForUser,
   markAllRecommendationsAsRead,
   updateRecommendationArchived,
   type Recommendation,
-} from '../../services/recommendationService';
+} from "../../services/recommendationService";
 
 type RecommendationWithBusiness = Recommendation & {
   business: Business | null;
@@ -25,13 +35,13 @@ type RecommendationWithBusiness = Recommendation & {
 function formatRecommendationDate(createdAt: string) {
   const date = new Date(createdAt);
 
-  if (Number.isNaN(date.getTime())) return '';
+  if (Number.isNaN(date.getTime())) return "";
 
   return date.toLocaleString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
@@ -40,7 +50,9 @@ export default function RecommendationsScreen() {
   const { user, loading: authLoading } = useAuth();
   const { toggleSaved, isSaved } = useSavedBusinesses();
 
-  const [recommendations, setRecommendations] = useState<RecommendationWithBusiness[]>([]);
+  const [recommendations, setRecommendations] = useState<
+    RecommendationWithBusiness[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -62,12 +74,12 @@ export default function RecommendationsScreen() {
         data.map(async (recommendation) => ({
           ...recommendation,
           business: await getBusinessBySlug(recommendation.businessSlug),
-        }))
+        })),
       );
 
       setRecommendations(withBusinesses);
     } catch (error) {
-      console.error('Error loading recommendations:', error);
+      console.error("Error loading recommendations:", error);
     } finally {
       setLoading(false);
     }
@@ -88,20 +100,20 @@ export default function RecommendationsScreen() {
           current.map((recommendation) => ({
             ...recommendation,
             read: true,
-          }))
+          })),
         );
       }, 1200);
-    }, [user])
+    }, [user]),
   );
 
   const visibleRecommendations = useMemo(() => {
     return recommendations
       .filter((recommendation) =>
-        showArchived ? recommendation.archived : !recommendation.archived
+        showArchived ? recommendation.archived : !recommendation.archived,
       )
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       );
   }, [recommendations, showArchived]);
 
@@ -116,8 +128,8 @@ export default function RecommendationsScreen() {
 
     setRecommendations((current) =>
       current.map((item) =>
-        item.id === recommendation.id ? { ...item, archived: true } : item
-      )
+        item.id === recommendation.id ? { ...item, archived: true } : item,
+      ),
     );
   }
 
@@ -126,29 +138,29 @@ export default function RecommendationsScreen() {
 
     setRecommendations((current) =>
       current.map((item) =>
-        item.id === recommendation.id ? { ...item, archived: true } : item
-      )
+        item.id === recommendation.id ? { ...item, archived: true } : item,
+      ),
     );
   }
 
   function handleDelete(recommendation: RecommendationWithBusiness) {
     Alert.alert(
-      'Delete recommendation',
-      'This will permanently delete this recommendation.',
+      "Delete recommendation",
+      "This will permanently delete this recommendation.",
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: "Cancel", style: "cancel" },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: async () => {
             await deleteRecommendation(recommendation.id);
 
             setRecommendations((current) =>
-              current.filter((item) => item.id !== recommendation.id)
+              current.filter((item) => item.id !== recommendation.id),
             );
           },
         },
-      ]
+      ],
     );
   }
 
@@ -254,20 +266,26 @@ export default function RecommendationsScreen() {
               Create an account or log in to receive places from other users.
             </Text>
 
-            <Pressable style={styles.primaryButton} onPress={() => router.push('/auth')}>
+            <Pressable
+              style={styles.primaryButton}
+              onPress={() => router.push("/auth")}
+            >
               <Text style={styles.primaryButtonText}>Log In / Sign Up</Text>
             </Pressable>
           </View>
         ) : visibleRecommendations.length > 0 ? (
           visibleRecommendations.map((recommendation) => {
-            const businessSaved =
-              recommendation.business ? isSaved(recommendation.business.slug) : false;
+            const businessSaved = recommendation.business
+              ? isSaved(recommendation.business.slug)
+              : false;
 
             return (
               <Swipeable
                 key={recommendation.id}
                 renderLeftActions={
-                  showArchived ? undefined : () => renderSaveAction(recommendation)
+                  showArchived || businessSaved
+                    ? undefined
+                    : () => renderSaveAction(recommendation)
                 }
                 renderRightActions={() =>
                   showArchived
@@ -286,7 +304,9 @@ export default function RecommendationsScreen() {
                   ]}
                   onPress={() => {
                     if (recommendation.business) {
-                      router.push(`/business/${recommendation.business.slug}` as any);
+                      router.push(
+                        `/business/${recommendation.business.slug}` as any,
+                      );
                     }
                   }}
                 >
@@ -328,27 +348,35 @@ export default function RecommendationsScreen() {
                   </View>
 
                   <Text style={styles.businessName}>
-                    {recommendation.business?.name ?? 'Business not found'}
+                    {recommendation.business?.name ?? "Business not found"}
                   </Text>
 
                   <Text style={styles.businessDescription}>
                     {recommendation.business?.shortDescription ??
-                      'This business may no longer be available.'}
+                      "This business may no longer be available."}
                   </Text>
 
                   {recommendation.message ? (
                     <View style={styles.messageBubble}>
                       <Text style={styles.messageLabel}>Message</Text>
-                      <Text style={styles.messageText}>“{recommendation.message}”</Text>
+                      <Text style={styles.messageText}>
+                        “{recommendation.message}”
+                      </Text>
                     </View>
                   ) : null}
 
                   <View style={styles.swipeHintRow}>
                     <Text style={styles.swipeHint}>
-                      {showArchived ? 'Saved status shown above' : 'Swipe right to save'}
+                      {showArchived
+                        ? "Saved status shown above"
+                        : businessSaved
+                          ? "Already saved"
+                          : "Swipe right to save"}
                     </Text>
                     <Text style={styles.swipeHint}>
-                      {showArchived ? 'Swipe left to delete' : 'Swipe left to archive'}
+                      {showArchived
+                        ? "Swipe left to delete"
+                        : "Swipe left to archive"}
                     </Text>
                   </View>
                 </Pressable>
@@ -358,12 +386,14 @@ export default function RecommendationsScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>
-              {showArchived ? 'No archived recommendations' : 'No new recommendations'}
+              {showArchived
+                ? "No archived recommendations"
+                : "No new recommendations"}
             </Text>
             <Text style={styles.emptyText}>
               {showArchived
-                ? 'Archived recommendations will appear here.'
-                : 'New recommendations will appear here until you save or archive them.'}
+                ? "Archived recommendations will appear here."
+                : "New recommendations will appear here until you save or archive them."}
             </Text>
           </View>
         )}
@@ -386,14 +416,14 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1.2,
     color: GimaColors.mutedText,
     marginBottom: 8,
   },
   title: {
     fontSize: 34,
-    fontWeight: '900',
+    fontWeight: "900",
     color: GimaColors.ocean,
     marginBottom: 8,
   },
@@ -403,8 +433,8 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   segmentedControl: {
-    flexDirection: 'row',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignSelf: "flex-start",
     marginTop: 14,
     backgroundColor: GimaColors.card,
     borderWidth: 1,
@@ -422,11 +452,11 @@ const styles = StyleSheet.create({
   },
   segmentButtonText: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.mutedText,
   },
   segmentButtonTextActive: {
-    color: '#fff',
+    color: "#fff",
   },
   section: {
     marginBottom: 18,
@@ -455,9 +485,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   cardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 10,
     gap: 12,
   },
@@ -466,7 +496,7 @@ const styles = StyleSheet.create({
   },
   recommendedBy: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
     color: GimaColors.mutedText,
     marginBottom: 3,
   },
@@ -475,7 +505,7 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
   },
   badgeRow: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
     gap: 6,
   },
   iconPill: {
@@ -486,8 +516,8 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   savedPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     backgroundColor: GimaColors.leaf,
     paddingHorizontal: 9,
@@ -495,9 +525,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   savedPillText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   unreadPill: {
     backgroundColor: GimaColors.coral,
@@ -507,12 +537,12 @@ const styles = StyleSheet.create({
   },
   unreadPillText: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#fff',
+    fontWeight: "800",
+    color: "#fff",
   },
   businessName: {
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
     marginBottom: 6,
   },
@@ -531,9 +561,9 @@ const styles = StyleSheet.create({
   },
   messageLabel: {
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     color: GimaColors.ocean,
     marginBottom: 5,
   },
@@ -541,38 +571,38 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: GimaColors.text,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
   swipeHintRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 12,
   },
   swipeHint: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     color: GimaColors.mutedText,
   },
   leftSwipeAction: {
     backgroundColor: GimaColors.ocean,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 96,
     borderRadius: 18,
     marginBottom: 14,
   },
   rightSwipeAction: {
     backgroundColor: GimaColors.coral,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 112,
     borderRadius: 18,
     marginBottom: 14,
   },
   deleteSwipeAction: {
-    backgroundColor: '#DC2626',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#DC2626",
+    justifyContent: "center",
+    alignItems: "center",
     width: 112,
     borderRadius: 18,
     marginBottom: 14,
@@ -586,7 +616,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
     marginBottom: 8,
   },
@@ -600,11 +630,11 @@ const styles = StyleSheet.create({
     backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   primaryButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 });
