@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-import { GimaColors } from "@/constants/gimaTheme";
+import { BidaColors } from "@/constants/bidaTheme";
 
 type BusinessCardProps = {
   name: string;
@@ -79,11 +79,11 @@ export function BusinessCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 16,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
   },
   inner: {
     overflow: "hidden",
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
   },
   image: {
     width: "100%",
@@ -110,11 +110,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: "700",
-    color: GimaColors.text,
+    color: BidaColors.text,
     marginBottom: 4,
   },
   description: {
     fontSize: 14,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
 });

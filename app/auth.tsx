@@ -1,5 +1,5 @@
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -10,22 +10,22 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { GimaColors } from '@/constants/gimaTheme';
-import { useAuth } from '@/context/AuthContext';
-import { logIn, signUp } from '../services/authService';
+import { BidaColors } from "@/constants/bidaTheme";
+import { useAuth } from "@/context/AuthContext";
+import { logIn, signUp } from "../services/authService";
 
 export default function AuthScreen() {
   const { user, loading } = useAuth();
 
   const [isLoginMode, setIsLoginMode] = useState(true);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (user) {
-      router.replace('/');
+      router.replace("/");
     }
   }, [user]);
 
@@ -35,7 +35,7 @@ export default function AuthScreen() {
     const cleanEmail = email.trim().toLowerCase();
 
     if (!cleanEmail || !password) {
-      Alert.alert('Missing info', 'Please enter both email and password.');
+      Alert.alert("Missing info", "Please enter both email and password.");
       return;
     }
 
@@ -46,16 +46,16 @@ export default function AuthScreen() {
         await signUp(cleanEmail, password);
       }
 
-      router.replace('/');
+      router.replace("/");
     } catch (error: any) {
-      Alert.alert('Auth Error', error.message || 'Something went wrong.');
+      Alert.alert("Auth Error", error.message || "Something went wrong.");
     }
   }
 
   return (
     <KeyboardAvoidingView
       style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
         style={styles.container}
@@ -64,16 +64,16 @@ export default function AuthScreen() {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>GIMA ACCOUNT</Text>
+          <Text style={styles.eyebrow}>BIDA ACCOUNT</Text>
 
           <Text style={styles.title}>
-            {isLoginMode ? 'Welcome back' : 'Join Gima'}
+            {isLoginMode ? "Welcome back" : "Join Bida"}
           </Text>
 
           <Text style={styles.subtitle}>
             {isLoginMode
-              ? 'Log in to save places and receive island recommendations.'
-              : 'Create an account to save local spots and share recommendations.'}
+              ? "Log in to save places and receive island recommendations."
+              : "Create an account to save local spots and share recommendations."}
           </Text>
         </View>
 
@@ -119,7 +119,7 @@ export default function AuthScreen() {
           <TextInput
             style={styles.input}
             placeholder="you@example.com"
-            placeholderTextColor={GimaColors.mutedText}
+            placeholderTextColor={BidaColors.mutedText}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -130,7 +130,7 @@ export default function AuthScreen() {
           <TextInput
             style={styles.input}
             placeholder="At least 6 characters"
-            placeholderTextColor={GimaColors.mutedText}
+            placeholderTextColor={BidaColors.mutedText}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -139,7 +139,7 @@ export default function AuthScreen() {
           {/* Coral button */}
           <Pressable style={styles.primaryButton} onPress={handleSubmit}>
             <Text style={styles.primaryButtonText}>
-              {isLoginMode ? 'Log In' : 'Create Account'}
+              {isLoginMode ? "Log In" : "Create Account"}
             </Text>
           </Pressable>
         </View>
@@ -155,11 +155,11 @@ export default function AuthScreen() {
 const styles = StyleSheet.create({
   keyboardView: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
   },
   container: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
   },
   contentContainer: {
     flexGrow: 1,
@@ -173,103 +173,103 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1.2,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 6,
   },
   title: {
     fontSize: 38,
-    fontWeight: '900',
-    color: GimaColors.ocean,
+    fontWeight: "900",
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
     lineHeight: 24,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
 
   card: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
   },
 
   modeRow: {
-    flexDirection: 'row',
-    backgroundColor: GimaColors.background,
+    flexDirection: "row",
+    backgroundColor: BidaColors.background,
     borderRadius: 16,
     padding: 5,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
   },
   modeButton: {
     flex: 1,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     borderRadius: 12,
   },
 
   // ocean-light toggle
   activeModeButton: {
-    backgroundColor: GimaColors.oceanLight,
+    backgroundColor: BidaColors.oceanLight,
     borderWidth: 1,
-    borderColor: GimaColors.ocean,
+    borderColor: BidaColors.ocean,
   },
 
   modeButtonText: {
     fontSize: 15,
-    fontWeight: '800',
-    color: GimaColors.mutedText,
+    fontWeight: "800",
+    color: BidaColors.mutedText,
   },
   activeModeButtonText: {
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
   },
 
   label: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    color: GimaColors.mutedText,
+    textTransform: "uppercase",
+    color: BidaColors.mutedText,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 13,
     fontSize: 16,
-    color: GimaColors.text,
+    color: BidaColors.text,
     marginBottom: 14,
   },
 
   primaryButton: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 4,
   },
   primaryButtonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   backButton: {
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 22,
   },
   backButtonText: {
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

@@ -13,7 +13,7 @@ import {
 import { Swipeable } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { GimaColors } from "@/constants/gimaTheme";
+import { BidaColors } from "@/constants/bidaTheme";
 import { useAuth } from "@/context/AuthContext";
 import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
 
@@ -223,7 +223,7 @@ export default function RecommendationsScreen() {
         </Text>
 
         <Text style={styles.subtitle}>
-          Places shared with you by other Gima users.
+          Places shared with you by other Bida users.
         </Text>
 
         {user ? (
@@ -345,7 +345,7 @@ export default function RecommendationsScreen() {
                           <Ionicons
                             name="archive-outline"
                             size={14}
-                            color={GimaColors.mutedText}
+                            color={BidaColors.mutedText}
                           />
                         </View>
                       ) : null}
@@ -416,7 +416,7 @@ export default function RecommendationsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -429,27 +429,27 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.2,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 8,
   },
   title: {
     fontSize: 34,
     fontWeight: "900",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     lineHeight: 24,
   },
   segmentedControl: {
     flexDirection: "row",
     alignSelf: "flex-start",
     marginTop: 14,
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     borderRadius: 999,
     padding: 4,
   },
@@ -459,12 +459,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   segmentButtonActive: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
   },
   segmentButtonText: {
     fontSize: 12,
     fontWeight: "800",
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
   segmentButtonTextActive: {
     color: "#fff",
@@ -474,22 +474,22 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 16,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
   recommendationCard: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     marginBottom: 14,
   },
   unreadCard: {
-    borderColor: GimaColors.coral,
+    borderColor: BidaColors.coral,
     borderWidth: 1.5,
   },
   savedCard: {
-    borderColor: GimaColors.leaf,
+    borderColor: BidaColors.leaf,
     borderWidth: 1.5,
   },
   archivedCard: {
@@ -508,21 +508,21 @@ const styles = StyleSheet.create({
   recommendedBy: {
     fontSize: 13,
     fontWeight: "700",
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 3,
   },
   sentAt: {
     fontSize: 12,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
   badgeRow: {
     alignItems: "flex-end",
     gap: 6,
   },
   iconPill: {
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     padding: 6,
     borderRadius: 999,
   },
@@ -530,7 +530,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    backgroundColor: GimaColors.leaf,
+    backgroundColor: BidaColors.leaf,
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 999,
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
   unreadPill: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 999,
@@ -554,34 +554,34 @@ const styles = StyleSheet.create({
   businessName: {
     fontSize: 20,
     fontWeight: "800",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 6,
   },
   businessDescription: {
     fontSize: 15,
     lineHeight: 22,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 10,
   },
   messageBubble: {
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
     borderRadius: 14,
     padding: 12,
     borderWidth: 1.5,
-    borderColor: GimaColors.coral,
+    borderColor: BidaColors.coral,
   },
   messageLabel: {
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 0.8,
     textTransform: "uppercase",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 5,
   },
   messageText: {
     fontSize: 15,
     lineHeight: 22,
-    color: GimaColors.text,
+    color: BidaColors.text,
     fontStyle: "italic",
   },
   swipeHintRow: {
@@ -592,10 +592,10 @@ const styles = StyleSheet.create({
   swipeHint: {
     fontSize: 11,
     fontWeight: "700",
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
   leftSwipeAction: {
-    backgroundColor: GimaColors.ocean,
+    backgroundColor: BidaColors.ocean,
     justifyContent: "center",
     alignItems: "center",
     width: 96,
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   rightSwipeAction: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     justifyContent: "center",
     alignItems: "center",
     width: 112,
@@ -619,26 +619,26 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   emptyState: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
   },
   emptyTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 15,
     lineHeight: 22,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 18,
   },
   primaryButton: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",

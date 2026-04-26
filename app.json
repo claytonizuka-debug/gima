@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "gima",
-    "slug": "gima",
+    "name": "Bida",
+    "slug": "bida",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "gima",
+    "scheme": "bida",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

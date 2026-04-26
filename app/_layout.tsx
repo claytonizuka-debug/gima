@@ -1,13 +1,13 @@
-import { Stack } from 'expo-router';
-import { StatusBar } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Stack } from "expo-router";
+import { StatusBar } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
-import { GimaColors } from '@/constants/gimaTheme';
-import { AuthProvider } from '@/context/AuthContext';
-import { SavedBusinessesProvider } from '@/context/SavedBusinessesContext';
+import { BidaColors } from "@/constants/bidaTheme";
+import { AuthProvider } from "@/context/AuthContext";
+import { SavedBusinessesProvider } from "@/context/SavedBusinessesContext";
 
 export const unstable_settings = {
-  initialRouteName: '(tabs)',
+  initialRouteName: "(tabs)",
 };
 
 export default function RootLayout() {
@@ -15,15 +15,18 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <AuthProvider>
         <SavedBusinessesProvider>
-          <StatusBar barStyle="dark-content" backgroundColor={GimaColors.background} />
+          <StatusBar
+            barStyle="dark-content"
+            backgroundColor={BidaColors.background}
+          />
 
           <Stack
             screenOptions={{
-              headerBackTitle: '',
-              headerTintColor: GimaColors.ocean,
+              headerBackTitle: "",
+              headerTintColor: BidaColors.ocean,
               headerShadowVisible: false,
               headerStyle: {
-                backgroundColor: GimaColors.background,
+                backgroundColor: BidaColors.background,
               },
             }}
           >
@@ -31,7 +34,7 @@ export default function RootLayout() {
               name="(tabs)"
               options={{
                 headerShown: false,
-                title: '',
+                title: "",
               }}
             />
 
@@ -39,11 +42,11 @@ export default function RootLayout() {
               name="business/[slug]"
               options={{
                 headerShown: true,
-                title: '',
-                headerTitle: '',
-                headerBackTitle: '',
+                title: "",
+                headerTitle: "",
+                headerBackTitle: "",
                 headerBackVisible: true,
-                animation: 'slide_from_right',
+                animation: "slide_from_right",
               }}
             />
 
@@ -51,7 +54,7 @@ export default function RootLayout() {
               name="auth"
               options={{
                 headerShown: false,
-                title: '',
+                title: "",
               }}
             />
           </Stack>

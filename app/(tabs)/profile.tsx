@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { GimaColors } from "@/constants/gimaTheme";
+import { BidaColors } from "@/constants/bidaTheme";
 import { useAuth } from "@/context/AuthContext";
 import { logOut } from "../../services/authService";
 import {
@@ -99,7 +99,7 @@ export default function ProfileScreen() {
         <Text style={styles.eyebrow}>PROFILE</Text>
         <Text style={styles.title}>Your Account</Text>
         <Text style={styles.subtitle}>
-          Manage your Gima account and preferences.
+          Manage your Bida account and preferences.
         </Text>
       </View>
 
@@ -123,7 +123,7 @@ export default function ProfileScreen() {
                   value={usernameInput}
                   onChangeText={setUsernameInput}
                   placeholder="Username"
-                  placeholderTextColor={GimaColors.mutedText}
+                  placeholderTextColor={BidaColors.mutedText}
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
@@ -198,7 +198,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -211,26 +211,26 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     letterSpacing: 1.2,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 8,
   },
   title: {
     fontSize: 34,
     fontWeight: "900",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     lineHeight: 24,
   },
   card: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     marginBottom: 14,
   },
   labelRow: {
@@ -244,33 +244,33 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.8,
     textTransform: "uppercase",
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 6,
   },
   editText: {
     fontSize: 13,
     fontWeight: "800",
-    color: GimaColors.coral,
+    color: BidaColors.coral,
   },
   value: {
     fontSize: 18,
     fontWeight: "800",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
   },
   input: {
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
     borderWidth: 1.5,
-    borderColor: GimaColors.coral,
+    borderColor: BidaColors.coral,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
     fontWeight: "700",
-    color: GimaColors.text,
+    color: BidaColors.text,
   },
   usernameHint: {
     fontSize: 12,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginTop: 8,
     lineHeight: 18,
   },
@@ -281,20 +281,20 @@ const styles = StyleSheet.create({
   },
   cancelEditButton: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
   },
   cancelEditButtonText: {
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     fontWeight: "800",
   },
   saveEditButton: {
     flex: 1,
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
@@ -308,24 +308,24 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: GimaColors.border,
+    backgroundColor: BidaColors.border,
     marginVertical: 16,
   },
   logoutButton: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderWidth: 1.5,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
   },
   logoutButtonText: {
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     fontWeight: "800",
     fontSize: 16,
   },
   loginButton: {
-    backgroundColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
@@ -339,12 +339,12 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 18,
     fontWeight: "800",
-    color: GimaColors.ocean,
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 15,
     lineHeight: 22,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
 });

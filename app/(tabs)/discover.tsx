@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
+import { useRouter } from "expo-router";
+import { useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -7,19 +7,29 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BusinessCard } from '@/components/BusinessCard';
-import { SkeletonCard } from '@/components/SkeletonCard';
-import { GimaColors } from '@/constants/gimaTheme';
-import { useBusinesses } from '@/hooks/useBusinesses';
+import { BusinessCard } from "@/components/BusinessCard";
+import { SkeletonCard } from "@/components/SkeletonCard";
+import { BidaColors } from "@/constants/bidaTheme";
+import { useBusinesses } from "@/hooks/useBusinesses";
 
-const FILTERS = ['All', 'Food', 'Fitness', 'Beaches', 'Attractions', 'Events', 'Shopping', 'Services', 'Hotels'];
+const FILTERS = [
+  "All",
+  "Food",
+  "Fitness",
+  "Beaches",
+  "Attractions",
+  "Events",
+  "Shopping",
+  "Services",
+  "Hotels",
+];
 
 export default function DiscoverScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
 
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -28,7 +38,7 @@ export default function DiscoverScreen() {
   const filteredBusinesses = useMemo(() => {
     return businesses.filter((business) => {
       const query = searchQuery.trim().toLowerCase();
-      const category = (business.category || '').toLowerCase();
+      const category = (business.category || "").toLowerCase();
 
       const matchesSearch =
         !query ||
@@ -38,8 +48,7 @@ export default function DiscoverScreen() {
         business.shortDescription.toLowerCase().includes(query);
 
       const matchesFilter =
-        activeFilter === 'All' ||
-        category.includes(activeFilter.toLowerCase());
+        activeFilter === "All" || category.includes(activeFilter.toLowerCase());
 
       return matchesSearch && matchesFilter;
     });
@@ -58,14 +67,15 @@ export default function DiscoverScreen() {
         <Text style={styles.eyebrow}>DISCOVER</Text>
         <Text style={styles.title}>Explore Saipan</Text>
         <Text style={styles.subtitle}>
-          Search local businesses, island favorites, and places worth checking out.
+          Search local businesses, island favorites, and places worth checking
+          out.
         </Text>
       </View>
 
       <TextInput
         style={styles.searchInput}
         placeholder="Search businesses, categories, or locations"
-        placeholderTextColor={GimaColors.mutedText}
+        placeholderTextColor={BidaColors.mutedText}
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
@@ -105,8 +115,8 @@ export default function DiscoverScreen() {
         <View>
           <Text style={styles.resultsTitle}>Results</Text>
           <Text style={styles.resultsCaption}>
-            {activeFilter === 'All'
-              ? 'Find your next local stop'
+            {activeFilter === "All"
+              ? "Find your next local stop"
               : activeFilter}
           </Text>
         </View>
@@ -130,9 +140,7 @@ export default function DiscoverScreen() {
               name={business.name}
               description={business.shortDescription}
               image={business.image}
-              onPress={() =>
-                router.push(`/business/${business.slug}` as any)
-              }
+              onPress={() => router.push(`/business/${business.slug}` as any)}
             />
           ))
         ) : (
@@ -151,7 +159,7 @@ export default function DiscoverScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: GimaColors.background,
+    backgroundColor: BidaColors.background,
   },
   contentContainer: {
     paddingHorizontal: 20,
@@ -162,110 +170,110 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1.2,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginBottom: 6,
   },
   title: {
     fontSize: 36,
-    fontWeight: '900',
-    color: GimaColors.ocean,
+    fontWeight: "900",
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     lineHeight: 24,
   },
   searchInput: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    color: GimaColors.text,
+    color: BidaColors.text,
     marginBottom: 14,
     borderWidth: 1.5,
-    borderColor: GimaColors.coral,
+    borderColor: BidaColors.coral,
   },
   filterRow: {
     gap: 8,
     paddingBottom: 18,
   },
   filterPill: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
   },
   activeFilterPill: {
-    backgroundColor: GimaColors.coral,
-    borderColor: GimaColors.coral,
+    backgroundColor: BidaColors.coral,
+    borderColor: BidaColors.coral,
   },
   filterPillText: {
-    color: GimaColors.text,
-    fontWeight: '800',
+    color: BidaColors.text,
+    fontWeight: "800",
     fontSize: 13,
   },
   activeFilterPillText: {
-    color: '#fff',
+    color: "#fff",
   },
   pressedButton: {
     opacity: 0.75,
     transform: [{ scale: 0.98 }],
   },
   resultsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 14,
     gap: 12,
   },
   resultsTitle: {
     fontSize: 22,
-    fontWeight: '800',
-    color: GimaColors.ocean,
+    fontWeight: "800",
+    color: BidaColors.ocean,
   },
   resultsCaption: {
     fontSize: 13,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
     marginTop: 2,
   },
   countPill: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderWidth: 1,
-    borderColor: GimaColors.coral,
+    borderColor: BidaColors.coral,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
   },
   countPillText: {
     fontSize: 12,
-    fontWeight: '800',
-    color: GimaColors.text,
+    fontWeight: "800",
+    color: BidaColors.text,
   },
   section: {
     marginBottom: 18,
   },
   emptyState: {
-    backgroundColor: GimaColors.card,
+    backgroundColor: BidaColors.card,
     borderRadius: 18,
     padding: 20,
     borderWidth: 1,
-    borderColor: GimaColors.border,
+    borderColor: BidaColors.border,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
-    color: GimaColors.ocean,
+    fontWeight: "800",
+    color: BidaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     fontSize: 15,
     lineHeight: 22,
-    color: GimaColors.mutedText,
+    color: BidaColors.mutedText,
   },
 });
