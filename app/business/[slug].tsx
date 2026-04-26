@@ -1,5 +1,5 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -13,16 +13,18 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { GimaColors } from '@/constants/gimaTheme';
-import { useAuth } from '@/context/AuthContext';
-import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
+import { GimaColors } from "@/constants/gimaTheme";
+import { useAuth } from "@/context/AuthContext";
+import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
 
-import { getBusinessBySlug, type Business } from '../../services/businessService';
-import { sendRecommendation } from '../../services/recommendationService';
-import { getUserByEmail } from '../../services/userService';
-
+import {
+  getBusinessBySlug,
+  type Business,
+} from "../../services/businessService";
+import { sendRecommendation } from "../../services/recommendationService";
+import { getUserByUsername } from "../../services/userService";
 export default function BusinessDetailScreen() {
   const params = useLocalSearchParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
@@ -34,8 +36,8 @@ export default function BusinessDetailScreen() {
   const [loading, setLoading] = useState(true);
 
   const [recommendModalVisible, setRecommendModalVisible] = useState(false);
-  const [recipientEmail, setRecipientEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [sendingRecommendation, setSendingRecommendation] = useState(false);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function BusinessDetailScreen() {
         const data = await getBusinessBySlug(slug);
         setBusiness(data);
       } catch (error) {
-        console.error('Error loading business:', error);
+        console.error("Error loading business:", error);
         setBusiness(null);
       } finally {
         setLoading(false);
@@ -85,7 +87,7 @@ export default function BusinessDetailScreen() {
 
   async function handleSave() {
     if (!user) {
-      router.push('/auth');
+      router.push("/auth");
       return;
     }
 
@@ -94,16 +96,14 @@ export default function BusinessDetailScreen() {
 
   function handleOpenRecommendModal() {
     if (!user || !user.email) {
-      Alert.alert(
-        'Login required',
-        'Please log in to send recommendations.',
-        [{ text: 'Go to Login', onPress: () => router.push('/auth') }]
-      );
+      Alert.alert("Login required", "Please log in to send recommendations.", [
+        { text: "Go to Login", onPress: () => router.push("/auth") },
+      ]);
       return;
     }
 
-    setRecipientEmail('');
-    setMessage('');
+    setRecipientEmail("");
+    setMessage("");
     setRecommendModalVisible(true);
   }
 
@@ -111,26 +111,26 @@ export default function BusinessDetailScreen() {
     if (!user || !user.email) return;
 
     const fromEmail = user.email;
-    const cleanEmail = recipientEmail.trim().toLowerCase();
+    const cleanUsername = recipientEmail.trim().replace("@", "").toLowerCase();
     const cleanMessage = message.trim();
 
-    if (!cleanEmail) {
-      Alert.alert('Missing email', 'Please enter an email.');
-      return;
-    }
-
-    if (cleanEmail === fromEmail.toLowerCase()) {
-      Alert.alert('Invalid', 'You cannot recommend a business to yourself.');
+    if (!cleanUsername) {
+      Alert.alert("Missing username", "Please enter a username.");
       return;
     }
 
     try {
       setSendingRecommendation(true);
 
-      const targetUser = await getUserByEmail(cleanEmail);
+      const targetUser = await getUserByUsername(cleanUsername);
 
       if (!targetUser) {
-        Alert.alert('User not found', 'No account exists with that email.');
+        Alert.alert("User not found", "No account exists with that username.");
+        return;
+      }
+
+      if (targetUser.uid === user.uid) {
+        Alert.alert("Invalid", "You cannot recommend a business to yourself.");
         return;
       }
 
@@ -143,44 +143,43 @@ export default function BusinessDetailScreen() {
       });
 
       setRecommendModalVisible(false);
-      setRecipientEmail('');
-      setMessage('');
+      setRecipientEmail("");
+      setMessage("");
 
       Alert.alert(
-        'Recommendation sent',
-        `${safeBusiness.name} was sent to ${cleanEmail}.`
+        "Sent",
+        `${safeBusiness.name} was sent to @${targetUser.username}.`,
       );
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to send recommendation.');
+      Alert.alert("Error", "Failed to send recommendation.");
     } finally {
       setSendingRecommendation(false);
     }
   }
-
   function handleOpenMaps() {
     const destination = encodeURIComponent(
-      `${safeBusiness.name} ${safeBusiness.location} Saipan CNMI`
+      `${safeBusiness.name} ${safeBusiness.location} Saipan CNMI`,
     );
 
-    Alert.alert('Open Maps', 'Choose an app', [
+    Alert.alert("Open Maps", "Choose an app", [
       {
-        text: 'Apple Maps',
+        text: "Apple Maps",
         onPress: () => {
           Linking.openURL(`http://maps.apple.com/?q=${destination}`);
         },
       },
       {
-        text: 'Google Maps',
+        text: "Google Maps",
         onPress: () => {
           Linking.openURL(
-            `https://www.google.com/maps/search/?api=1&query=${destination}`
+            `https://www.google.com/maps/search/?api=1&query=${destination}`,
           );
         },
       },
       {
-        text: 'Cancel',
-        style: 'cancel',
+        text: "Cancel",
+        style: "cancel",
       },
     ]);
   }
@@ -194,7 +193,7 @@ export default function BusinessDetailScreen() {
   function handleOpenWebsite() {
     if (!safeBusiness.website) return;
 
-    const websiteUrl = safeBusiness.website.startsWith('http')
+    const websiteUrl = safeBusiness.website.startsWith("http")
       ? safeBusiness.website
       : `https://${safeBusiness.website}`;
 
@@ -228,7 +227,9 @@ export default function BusinessDetailScreen() {
             onPress={handleSave}
             disabled={savedLoading}
           >
-            <Text style={styles.saveButtonText}>{saved ? 'Saved' : 'Save'}</Text>
+            <Text style={styles.saveButtonText}>
+              {saved ? "Saved" : "Save"}
+            </Text>
           </Pressable>
 
           <Pressable
@@ -273,21 +274,21 @@ export default function BusinessDetailScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Price</Text>
             <Text style={styles.detailValue}>
-              {safeBusiness.priceRange || 'Not listed'}
+              {safeBusiness.priceRange || "Not listed"}
             </Text>
           </View>
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Phone</Text>
             <Text style={styles.detailValue}>
-              {safeBusiness.phone || 'Not listed'}
+              {safeBusiness.phone || "Not listed"}
             </Text>
           </View>
 
           <View style={styles.detailRowLast}>
             <Text style={styles.detailLabel}>Website</Text>
             <Text style={styles.detailValue}>
-              {safeBusiness.website || 'Not listed'}
+              {safeBusiness.website || "Not listed"}
             </Text>
           </View>
 
@@ -322,7 +323,7 @@ export default function BusinessDetailScreen() {
       <Modal visible={recommendModalVisible} transparent animationType="fade">
         <KeyboardAvoidingView
           style={styles.modalOverlay}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           <View style={styles.modalCard}>
             <Text style={styles.modalTitle}>Recommend {safeBusiness.name}</Text>
@@ -332,7 +333,7 @@ export default function BusinessDetailScreen() {
 
             <TextInput
               style={styles.input}
-              placeholder="Email"
+              placeholder="Username"
               placeholderTextColor={GimaColors.mutedText}
               autoCapitalize="none"
               keyboardType="email-address"
@@ -359,7 +360,7 @@ export default function BusinessDetailScreen() {
               disabled={sendingRecommendation}
             >
               <Text style={styles.modalPrimaryButtonText}>
-                {sendingRecommendation ? 'Sending...' : 'Send Recommendation'}
+                {sendingRecommendation ? "Sending..." : "Send"}
               </Text>
             </Pressable>
 
@@ -370,8 +371,8 @@ export default function BusinessDetailScreen() {
               ]}
               onPress={() => {
                 setRecommendModalVisible(false);
-                setRecipientEmail('');
-                setMessage('');
+                setRecipientEmail("");
+                setMessage("");
               }}
               disabled={sendingRecommendation}
             >
@@ -394,39 +395,39 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 240,
     borderRadius: 16,
     marginBottom: 16,
   },
   metaRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginBottom: 10,
   },
   categoryPill: {
     backgroundColor: GimaColors.oceanLight,
     color: GimaColors.ocean,
-    overflow: 'hidden',
+    overflow: "hidden",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   statusPill: {
     backgroundColor: GimaColors.leaf,
-    color: '#fff',
-    overflow: 'hidden',
+    color: "#fff",
+    overflow: "hidden",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   title: {
     fontSize: 28,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
     marginBottom: 8,
   },
@@ -437,7 +438,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   actionRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginBottom: 12,
   },
@@ -446,25 +447,25 @@ const styles = StyleSheet.create({
     backgroundColor: GimaColors.ocean,
     paddingVertical: 12,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   savedButton: {
     backgroundColor: GimaColors.leaf,
   },
   saveButtonText: {
-    color: '#fff',
-    fontWeight: '800',
+    color: "#fff",
+    fontWeight: "800",
   },
   recommendButton: {
     flex: 1,
     backgroundColor: GimaColors.coral,
     paddingVertical: 12,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   recommendButtonText: {
-    color: '#fff',
-    fontWeight: '800',
+    color: "#fff",
+    fontWeight: "800",
   },
   pressedButton: {
     opacity: 0.78,
@@ -483,10 +484,10 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.mutedText,
     marginBottom: 4,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
   infoText: {
@@ -500,12 +501,12 @@ const styles = StyleSheet.create({
     borderColor: GimaColors.coral,
     paddingVertical: 12,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
   },
   directionsButtonText: {
     color: GimaColors.coral,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   detailRow: {
     borderBottomWidth: 1,
@@ -517,10 +518,10 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.mutedText,
     marginBottom: 3,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   detailValue: {
@@ -529,7 +530,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
   },
   detailButtonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 8,
     marginTop: 8,
   },
@@ -540,16 +541,16 @@ const styles = StyleSheet.create({
     borderColor: GimaColors.coral,
     paddingVertical: 12,
     borderRadius: 10,
-    alignItems: 'center',
+    alignItems: "center",
   },
   utilityButtonText: {
     color: GimaColors.coral,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
     padding: 20,
   },
   modalCard: {
@@ -561,7 +562,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
     marginBottom: 6,
   },
@@ -581,27 +582,27 @@ const styles = StyleSheet.create({
   },
   messageInput: {
     height: 90,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   modalPrimaryButton: {
     backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 10,
   },
   modalPrimaryButtonText: {
-    color: '#fff',
-    fontWeight: '800',
+    color: "#fff",
+    fontWeight: "800",
   },
   cancelButton: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 8,
     borderRadius: 10,
   },
   cancelButtonText: {
     color: GimaColors.mutedText,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   disabledButton: {
     opacity: 0.65,
@@ -609,8 +610,8 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: GimaColors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     color: GimaColors.mutedText,
@@ -618,18 +619,18 @@ const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
     backgroundColor: GimaColors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   emptyTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
     marginBottom: 8,
   },
   emptyText: {
     color: GimaColors.mutedText,
-    textAlign: 'center',
+    textAlign: "center",
   },
 });

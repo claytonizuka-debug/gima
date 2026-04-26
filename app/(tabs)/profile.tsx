@@ -1,128 +1,129 @@
-import { router } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { GimaColors } from '@/constants/gimaTheme';
-import { useAuth } from '@/context/AuthContext';
-import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
-import { logOut } from '../../services/authService';
+import { GimaColors } from "@/constants/gimaTheme";
+import { useAuth } from "@/context/AuthContext";
+import { logOut } from "../../services/authService";
+import { getUserProfile, type UserProfile } from "../../services/userService";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const { user, loading } = useAuth();
-  const { savedSlugs } = useSavedBusinesses();
+  const { user } = useAuth();
 
-  function handleLogout() {
-    Alert.alert('Log out', 'Are you sure you want to log out?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Log Out',
-        style: 'destructive',
-        onPress: async () => {
-          await logOut();
-        },
-      },
-    ]);
-  }
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  if (loading) {
-    return (
-      <View style={[styles.loadingContainer, { paddingTop: insets.top + 18 }]}>
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
-    );
+  useEffect(() => {
+    async function loadProfile() {
+      if (!user) {
+        setProfile(null);
+        return;
+      }
+
+      try {
+        const data = await getUserProfile(user.uid);
+        setProfile(data);
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      }
+    }
+
+    loadProfile();
+  }, [user]);
+
+  async function handleLogout() {
+    try {
+      await logOut();
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not log out.");
+    }
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        {
-          paddingTop: insets.top + 18,
-        },
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={[
+        styles.contentContainer,
+        { paddingTop: insets.top + 18 },
       ]}
+      showsVerticalScrollIndicator={false}
     >
       <View style={styles.hero}>
-        <Text style={styles.eyebrow}>ACCOUNT</Text>
-        <Text style={styles.title}>Profile</Text>
+        <Text style={styles.eyebrow}>PROFILE</Text>
+        <Text style={styles.title}>Your Account</Text>
         <Text style={styles.subtitle}>
-          Manage your Gima account and keep track of your island activity.
+          Manage your Gima account and preferences.
         </Text>
       </View>
 
-      <View style={styles.card}>
-        {user ? (
-          <>
-            <Text style={styles.label}>Signed in as</Text>
-            <Text style={styles.email}>{user.email}</Text>
-
-            <View style={styles.statCard}>
-              <View>
-                <Text style={styles.statLabel}>Saved places</Text>
-                <Text style={styles.statHint}>Your personal island list</Text>
-              </View>
-
-              <View style={styles.countPill}>
-                <Text style={styles.countPillText}>{savedSlugs.length}</Text>
-              </View>
-            </View>
-
-            <Pressable style={styles.logoutButton} onPress={handleLogout}>
-              <Text style={styles.logoutButtonText}>Log Out</Text>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={styles.label}>Guest mode</Text>
-            <Text style={styles.email}>You are not logged in.</Text>
-
-            <Text style={styles.helperText}>
-              Log in or create an account to save businesses and receive recommendations.
+      {user ? (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.label}>Username</Text>
+            <Text style={styles.value}>
+              @{profile?.username || user.email?.split("@")[0] || "user"}
             </Text>
 
-            <Pressable style={styles.loginButton} onPress={() => router.push('/auth')}>
-              <Text style={styles.loginButtonText}>Log In / Sign Up</Text>
-            </Pressable>
-          </>
-        )}
-      </View>
-    </View>
+            <View style={styles.divider} />
+
+            <Text style={styles.label}>Email</Text>
+            <Text style={styles.value}>{user.email}</Text>
+          </View>
+
+          <Pressable style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>Log Out</Text>
+          </Pressable>
+        </>
+      ) : (
+        <View style={styles.card}>
+          <Text style={styles.emptyTitle}>You are not logged in</Text>
+          <Text style={styles.emptyText}>
+            Log in or create an account to save places and send recommendations.
+          </Text>
+
+          <Pressable
+            style={styles.loginButton}
+            onPress={() => router.push("/auth")}
+          >
+            <Text style={styles.loginButtonText}>Log In / Sign Up</Text>
+          </Pressable>
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: GimaColors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  loadingText: {
-    fontSize: 16,
-    color: GimaColors.mutedText,
-  },
   container: {
     flex: 1,
     backgroundColor: GimaColors.background,
+  },
+  contentContainer: {
     paddingHorizontal: 20,
+    paddingBottom: 36,
   },
   hero: {
     marginBottom: 28,
   },
   eyebrow: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 1.2,
     color: GimaColors.mutedText,
     marginBottom: 8,
   },
   title: {
-    fontSize: 36,
-    fontWeight: '900',
+    fontSize: 34,
+    fontWeight: "900",
     color: GimaColors.ocean,
     marginBottom: 8,
   },
@@ -137,81 +138,60 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: GimaColors.border,
+    marginBottom: 14,
   },
   label: {
     fontSize: 12,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     color: GimaColors.mutedText,
-    marginBottom: 8,
+    marginBottom: 6,
   },
-  email: {
+  value: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: "800",
     color: GimaColors.ocean,
-    marginBottom: 18,
   },
-  helperText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: GimaColors.mutedText,
-    marginBottom: 20,
-  },
-  statCard: {
-    backgroundColor: GimaColors.background,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: GimaColors.coral,
-    marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  statLabel: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: GimaColors.text,
-    marginBottom: 3,
-  },
-  statHint: {
-    fontSize: 13,
-    color: GimaColors.mutedText,
-  },
-  countPill: {
-    backgroundColor: GimaColors.coral,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-  },
-  countPillText: {
-    fontSize: 13,
-    fontWeight: '900',
-    color: '#fff',
+  divider: {
+    height: 1,
+    backgroundColor: GimaColors.border,
+    marginVertical: 16,
   },
   logoutButton: {
-    backgroundColor: GimaColors.background,
-    borderWidth: 1,
+    backgroundColor: GimaColors.card,
+    borderWidth: 1.5,
     borderColor: GimaColors.border,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoutButtonText: {
     color: GimaColors.mutedText,
-    fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "800",
+    fontSize: 16,
   },
   loginButton: {
     backgroundColor: GimaColors.coral,
     paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
+    marginTop: 16,
   },
   loginButtonText: {
-    color: '#fff',
+    color: "#fff",
+    fontWeight: "800",
     fontSize: 16,
-    fontWeight: '800',
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: GimaColors.ocean,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: GimaColors.mutedText,
   },
 });

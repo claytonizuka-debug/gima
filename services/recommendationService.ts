@@ -9,9 +9,10 @@ import {
   query,
   updateDoc,
   where,
-} from 'firebase/firestore';
+} from "firebase/firestore";
 
-import { db } from '../firebaseConfig';
+import { db } from "../firebaseConfig";
+import { getUserProfile } from "./userService";
 
 export type Recommendation = {
   id: string;
@@ -19,6 +20,7 @@ export type Recommendation = {
   businessSlug: string;
   fromUserId: string;
   fromEmail: string;
+  fromUsername?: string;
   message?: string;
   createdAt: string;
   read: boolean;
@@ -35,12 +37,15 @@ type SendRecommendationInput = {
 };
 
 export async function sendRecommendation(input: SendRecommendationInput) {
-  await addDoc(collection(db, 'recommendations'), {
+  const fromUser = await getUserProfile(input.fromUserId);
+
+  await addDoc(collection(db, "recommendations"), {
     toUserId: input.toUserId,
     businessSlug: input.businessSlug,
     fromUserId: input.fromUserId,
     fromEmail: input.fromEmail,
-    message: input.message || '',
+    fromUsername: fromUser?.username || input.fromEmail,
+    message: input.message || "",
     createdAt: new Date().toISOString(),
     read: false,
     pinned: false,
@@ -49,14 +54,14 @@ export async function sendRecommendation(input: SendRecommendationInput) {
 }
 
 export async function getRecommendationsForUser(
-  userId: string
+  userId: string,
 ): Promise<Recommendation[]> {
-  const recommendationsRef = collection(db, 'recommendations');
+  const recommendationsRef = collection(db, "recommendations");
 
   const recommendationsQuery = query(
     recommendationsRef,
-    where('toUserId', '==', userId),
-    orderBy('createdAt', 'desc')
+    where("toUserId", "==", userId),
+    orderBy("createdAt", "desc"),
   );
 
   const snapshot = await getDocs(recommendationsQuery);
@@ -70,7 +75,8 @@ export async function getRecommendationsForUser(
       businessSlug: data.businessSlug,
       fromUserId: data.fromUserId,
       fromEmail: data.fromEmail,
-      message: data.message || '',
+      fromUsername: data.fromUsername,
+      message: data.message || "",
       createdAt: data.createdAt,
       read: data.read ?? false,
       pinned: data.pinned ?? false,
@@ -86,22 +92,22 @@ export async function markAllRecommendationsAsRead(userId: string) {
     recommendations
       .filter((recommendation) => !recommendation.read)
       .map((recommendation) =>
-        updateDoc(doc(db, 'recommendations', recommendation.id), {
+        updateDoc(doc(db, "recommendations", recommendation.id), {
           read: true,
-        })
-      )
+        }),
+      ),
   );
 }
 
 export function subscribeToUnreadRecommendationCount(
   userId: string,
-  callback: (count: number) => void
+  callback: (count: number) => void,
 ) {
   const unreadRecommendationsQuery = query(
-    collection(db, 'recommendations'),
-    where('toUserId', '==', userId),
-    where('read', '==', false),
-    where('archived', '==', false)
+    collection(db, "recommendations"),
+    where("toUserId", "==", userId),
+    where("read", "==", false),
+    where("archived", "==", false),
   );
 
   return onSnapshot(unreadRecommendationsQuery, (snapshot) => {
@@ -111,13 +117,13 @@ export function subscribeToUnreadRecommendationCount(
 
 export async function updateRecommendationArchived(
   recommendationId: string,
-  archived: boolean
+  archived: boolean,
 ) {
-  await updateDoc(doc(db, 'recommendations', recommendationId), {
+  await updateDoc(doc(db, "recommendations", recommendationId), {
     archived,
   });
 }
 
 export async function deleteRecommendation(recommendationId: string) {
-  await deleteDoc(doc(db, 'recommendations', recommendationId));
+  await deleteDoc(doc(db, "recommendations", recommendationId));
 }

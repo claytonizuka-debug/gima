@@ -2,14 +2,20 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
-} from 'firebase/auth';
-import { auth } from '../firebaseConfig';
-import { createUserProfile } from './userService';
+} from "firebase/auth";
+import { auth } from "../firebaseConfig";
+import { createUserProfile } from "./userService";
+
+function generateUsername(email: string) {
+  return email.split("@")[0].toLowerCase();
+}
 
 export async function signUp(email: string, password: string) {
   const result = await createUserWithEmailAndPassword(auth, email, password);
 
-  await createUserProfile(result.user.uid, email);
+  const username = generateUsername(email);
+
+  await createUserProfile(result.user.uid, email, username);
 
   return result.user;
 }

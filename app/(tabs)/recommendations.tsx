@@ -56,7 +56,7 @@ export default function RecommendationsScreen() {
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
 
-  async function loadRecommendations() {
+  const loadRecommendations = useCallback(async () => {
     if (authLoading) return;
 
     if (!user) {
@@ -83,11 +83,11 @@ export default function RecommendationsScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [user, authLoading]);
 
   useEffect(() => {
     loadRecommendations();
-  }, [user, authLoading]);
+  }, [loadRecommendations]);
 
   useFocusEffect(
     useCallback(() => {
@@ -313,7 +313,9 @@ export default function RecommendationsScreen() {
                   <View style={styles.cardTopRow}>
                     <View style={styles.senderBlock}>
                       <Text style={styles.recommendedBy}>
-                        Recommended by {recommendation.fromEmail}
+                        Recommended by{" "}
+                        {recommendation.fromUsername ||
+                          recommendation.fromEmail}{" "}
                       </Text>
 
                       <Text style={styles.sentAt}>

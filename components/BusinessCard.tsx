@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   Animated,
   StyleProp,
@@ -7,9 +7,9 @@ import {
   TouchableOpacity,
   View,
   ViewStyle,
-} from 'react-native';
+} from "react-native";
 
-import { GimaColors } from '@/constants/gimaTheme';
+import { GimaColors } from "@/constants/gimaTheme";
 
 type BusinessCardProps = {
   name: string;
@@ -46,7 +46,7 @@ export function BusinessCard({
         }),
       ]).start();
     }
-  }, [imageLoaded]);
+  }, [imageLoaded, placeholderOpacity, imageOpacity]);
 
   return (
     <TouchableOpacity
@@ -74,7 +74,7 @@ export function BusinessCard({
         </View>
       </View>
     </TouchableOpacity>
-    );
+  );
 }
 
 const styles = StyleSheet.create({
@@ -85,10 +85,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GimaColors.border,
   },
+  inner: {
+    overflow: "hidden",
+    borderRadius: 16,
+  },
   imageWrapper: {
-    width: '100%',
+    width: "100%",
     height: 170,
-    overflow: 'hidden',
+    overflow: "hidden",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
   },
@@ -97,7 +101,7 @@ const styles = StyleSheet.create({
     backgroundColor: GimaColors.card,
   },
   image: {
-    width: '100%',
+    width: "100%",
     height: 170,
   },
   textContainer: {
@@ -105,7 +109,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
     color: GimaColors.text,
     marginBottom: 4,
   },
@@ -113,8 +117,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GimaColors.mutedText,
   },
-  inner: {
-  overflow: 'hidden',
-  borderRadius: 16,
-},
 });
