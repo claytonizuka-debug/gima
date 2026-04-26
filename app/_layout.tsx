@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { GimaColors } from '@/constants/gimaTheme';
 import { AuthProvider } from '@/context/AuthContext';
@@ -11,49 +12,51 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <SavedBusinessesProvider>
-        <StatusBar barStyle="dark-content" backgroundColor={GimaColors.background} />
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <SavedBusinessesProvider>
+          <StatusBar barStyle="dark-content" backgroundColor={GimaColors.background} />
 
-        <Stack
-          screenOptions={{
-            headerBackTitle: '',
-            headerTintColor: GimaColors.ocean,
-            headerShadowVisible: false,
-            headerStyle: {
-              backgroundColor: GimaColors.background,
-            },
-          }}
-        >
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-              title: '',
-            }}
-          />
-
-          <Stack.Screen
-            name="business/[slug]"
-            options={{
-              headerShown: true,
-              title: '',
-              headerTitle: '',
+          <Stack
+            screenOptions={{
               headerBackTitle: '',
-              headerBackVisible: true,
-              animation: 'slide_from_right',
+              headerTintColor: GimaColors.ocean,
+              headerShadowVisible: false,
+              headerStyle: {
+                backgroundColor: GimaColors.background,
+              },
             }}
-          />
+          >
+            <Stack.Screen
+              name="(tabs)"
+              options={{
+                headerShown: false,
+                title: '',
+              }}
+            />
 
-          <Stack.Screen
-            name="auth"
-            options={{
-              headerShown: false,
-              title: '',
-            }}
-          />
-        </Stack>
-      </SavedBusinessesProvider>
-    </AuthProvider>
+            <Stack.Screen
+              name="business/[slug]"
+              options={{
+                headerShown: true,
+                title: '',
+                headerTitle: '',
+                headerBackTitle: '',
+                headerBackVisible: true,
+                animation: 'slide_from_right',
+              }}
+            />
+
+            <Stack.Screen
+              name="auth"
+              options={{
+                headerShown: false,
+                title: '',
+              }}
+            />
+          </Stack>
+        </SavedBusinessesProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }

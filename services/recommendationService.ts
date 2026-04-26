@@ -1,24 +1,28 @@
 import {
-    addDoc,
-    collection,
-    doc,
-    getDocs,
-    onSnapshot,
-    orderBy,
-    query,
-    updateDoc,
-    where,
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  where,
 } from 'firebase/firestore';
+
 import { db } from '../firebaseConfig';
 
 export type Recommendation = {
   id: string;
+  toUserId: string;
   businessSlug: string;
   fromUserId: string;
   fromEmail: string;
-  message?: string; // ✅ NEW
+  message?: string;
   createdAt: string;
   read: boolean;
+  pinned?: boolean;
+  archived?: boolean;
 };
 
 type SendRecommendationInput = {
@@ -26,63 +30,98 @@ type SendRecommendationInput = {
   businessSlug: string;
   fromUserId: string;
   fromEmail: string;
-  message?: string; // ✅ NEW
+  message?: string;
 };
 
-export async function sendRecommendation({
-  toUserId,
-  businessSlug,
-  fromUserId,
-  fromEmail,
-  message,
-}: SendRecommendationInput) {
-  const ref = collection(db, 'users', toUserId, 'recommendations');
-
-  await addDoc(ref, {
-    businessSlug,
-    fromUserId,
-    fromEmail: fromEmail.toLowerCase(),
-    message: message ?? '', // ✅ store message
+export async function sendRecommendation(input: SendRecommendationInput) {
+  await addDoc(collection(db, 'recommendations'), {
+    toUserId: input.toUserId,
+    businessSlug: input.businessSlug,
+    fromUserId: input.fromUserId,
+    fromEmail: input.fromEmail,
+    message: input.message || '',
     createdAt: new Date().toISOString(),
     read: false,
+    pinned: false,
+    archived: false,
   });
 }
 
-export async function getRecommendationsForUser(userId: string) {
-  const ref = collection(db, 'users', userId, 'recommendations');
-  const q = query(ref, orderBy('createdAt', 'desc'));
+export async function getRecommendationsForUser(
+  userId: string
+): Promise<Recommendation[]> {
+  const recommendationsRef = collection(db, 'recommendations');
 
-  const snapshot = await getDocs(q);
+  const recommendationsQuery = query(
+    recommendationsRef,
+    where('toUserId', '==', userId),
+    orderBy('createdAt', 'desc')
+  );
 
-  return snapshot.docs.map((docItem) => ({
-    id: docItem.id,
-    ...(docItem.data() as Omit<Recommendation, 'id'>),
-  }));
+  const snapshot = await getDocs(recommendationsQuery);
+
+  return snapshot.docs.map((docItem) => {
+    const data = docItem.data();
+
+    return {
+      id: docItem.id,
+      toUserId: data.toUserId,
+      businessSlug: data.businessSlug,
+      fromUserId: data.fromUserId,
+      fromEmail: data.fromEmail,
+      message: data.message || '',
+      createdAt: data.createdAt,
+      read: data.read ?? false,
+      pinned: data.pinned ?? false,
+      archived: data.archived ?? false,
+    };
+  });
+}
+
+export async function markAllRecommendationsAsRead(userId: string) {
+  const recommendations = await getRecommendationsForUser(userId);
+
+  await Promise.all(
+    recommendations
+      .filter((recommendation) => !recommendation.read)
+      .map((recommendation) =>
+        updateDoc(doc(db, 'recommendations', recommendation.id), {
+          read: true,
+        })
+      )
+  );
 }
 
 export function subscribeToUnreadRecommendationCount(
   userId: string,
   callback: (count: number) => void
 ) {
-  const ref = collection(db, 'users', userId, 'recommendations');
-  const q = query(ref, where('read', '==', false));
+  const unreadRecommendationsQuery = query(
+    collection(db, 'recommendations'),
+    where('toUserId', '==', userId),
+    where('read', '==', false),
+    where('archived', '==', false)
+  );
 
-  return onSnapshot(q, (snapshot) => {
+  return onSnapshot(unreadRecommendationsQuery, (snapshot) => {
     callback(snapshot.size);
   });
 }
 
-export async function markAllRecommendationsAsRead(userId: string) {
-  const ref = collection(db, 'users', userId, 'recommendations');
-  const snapshot = await getDocs(ref);
+export async function updateRecommendationPinned(
+  recommendationId: string,
+  pinned: boolean
+) {
+  await updateDoc(doc(db, 'recommendations', recommendationId), {
+    pinned,
+  });
+}
 
-  const updates = snapshot.docs
-    .filter((docItem) => !docItem.data().read)
-    .map((docItem) =>
-      updateDoc(doc(db, 'users', userId, 'recommendations', docItem.id), {
-        read: true,
-      })
-    );
-
-  await Promise.all(updates);
+export async function updateRecommendationArchived(
+  recommendationId: string,
+  archived: boolean
+) {
+  await updateDoc(doc(db, 'recommendations', recommendationId), {
+    archived,
+  });
 }
