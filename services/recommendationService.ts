@@ -108,20 +108,20 @@ export function subscribeToUnreadRecommendationCount(
   });
 }
 
-export async function updateRecommendationPinned(
-  recommendationId: string,
-  pinned: boolean
-) {
-  await updateDoc(doc(db, 'recommendations', recommendationId), {
-    pinned,
-  });
-}
-
 export async function updateRecommendationArchived(
   recommendationId: string,
   archived: boolean
 ) {
   await updateDoc(doc(db, 'recommendations', recommendationId), {
     archived,
+  });
+}
+
+export async function updateRecommendationPinned(
+  recommendationId: string,
+  pinned: boolean
+) {
+  await updateDoc(doc(db, 'recommendations', recommendationId), {
+    pinned,
   });
 }

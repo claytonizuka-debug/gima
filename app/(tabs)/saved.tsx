@@ -11,6 +11,7 @@ import { useBusinesses } from '@/hooks/useBusinesses';
 export default function SavedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
   const { businesses, loading } = useBusinesses();
   const { savedSlugs, loading: savedLoading } = useSavedBusinesses();
 
@@ -40,7 +41,7 @@ export default function SavedScreen() {
       <View style={styles.resultsHeader}>
         <View>
           <Text style={styles.resultsTitle}>Saved</Text>
-          <Text style={styles.resultsCaption}>Your personal list</Text>
+          <Text style={styles.resultsCaption}>Your personal island list</Text>
         </View>
 
         {!isLoading && (
@@ -67,7 +68,8 @@ export default function SavedScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>No saved places yet</Text>
             <Text style={styles.emptyText}>
-              Save businesses to quickly find them later.
+              Save businesses from Discover, business pages, or recommendations
+              to quickly find them later.
             </Text>
           </View>
         )}

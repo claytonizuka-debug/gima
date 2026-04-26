@@ -7,13 +7,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { GimaColors } from '@/constants/gimaTheme';
 import { useAuth } from '@/context/AuthContext';
+import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 
 import { getBusinessBySlug, type Business } from '../../services/businessService';
 import {
   getRecommendationsForUser,
   markAllRecommendationsAsRead,
   updateRecommendationArchived,
-  updateRecommendationPinned,
   type Recommendation,
 } from '../../services/recommendationService';
 
@@ -37,6 +37,7 @@ function formatRecommendationDate(createdAt: string) {
 export default function RecommendationsScreen() {
   const insets = useSafeAreaInsets();
   const { user, loading: authLoading } = useAuth();
+  const { toggleSaved, isSaved } = useSavedBusinesses();
 
   const [recommendations, setRecommendations] = useState<RecommendationWithBusiness[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,23 +98,24 @@ export default function RecommendationsScreen() {
       .filter((recommendation) =>
         showArchived ? recommendation.archived : !recommendation.archived
       )
-      .sort((a, b) => {
-        if (a.pinned === b.pinned) {
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        }
-
-        return Number(b.pinned) - Number(a.pinned);
-      });
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
   }, [recommendations, showArchived]);
 
-  async function handleTogglePin(recommendation: RecommendationWithBusiness) {
-    await updateRecommendationPinned(recommendation.id, !recommendation.pinned);
+  async function handleSavePlace(recommendation: RecommendationWithBusiness) {
+    if (!recommendation.business) return;
+
+    if (!isSaved(recommendation.business.slug)) {
+      await toggleSaved(recommendation.business.slug);
+    }
+
+    await updateRecommendationArchived(recommendation.id, true);
 
     setRecommendations((current) =>
       current.map((item) =>
-        item.id === recommendation.id
-          ? { ...item, pinned: !recommendation.pinned }
-          : item
+        item.id === recommendation.id ? { ...item, archived: true } : item
       )
     );
   }
@@ -133,17 +135,13 @@ export default function RecommendationsScreen() {
     );
   }
 
-  function renderPinAction(recommendation: RecommendationWithBusiness) {
+  function renderSaveAction(recommendation: RecommendationWithBusiness) {
     return (
       <Pressable
         style={styles.leftSwipeAction}
-        onPress={() => handleTogglePin(recommendation)}
+        onPress={() => handleSavePlace(recommendation)}
       >
-        <Ionicons
-          name={recommendation.pinned ? 'bookmark' : 'bookmark-outline'}
-          size={24}
-          color="#fff"
-        />
+        <Ionicons name="bookmark" size={24} color="#fff" />
       </Pressable>
     );
   }
@@ -155,7 +153,7 @@ export default function RecommendationsScreen() {
         onPress={() => handleToggleArchive(recommendation)}
       >
         <Ionicons
-          name={recommendation.archived ? 'archive' : 'archive-outline'}
+          name={recommendation.archived ? 'arrow-undo' : 'archive-outline'}
           size={24}
           color="#fff"
         />
@@ -183,43 +181,43 @@ export default function RecommendationsScreen() {
           Places shared with you by other Gima users.
         </Text>
 
-      {user ? (
-        <View style={styles.segmentedControl}>
-          <Pressable
-            style={[
-              styles.segmentButton,
-              !showArchived && styles.segmentButtonActive,
-            ]}
-            onPress={() => setShowArchived(false)}
-          >
-            <Text
+        {user ? (
+          <View style={styles.segmentedControl}>
+            <Pressable
               style={[
-                styles.segmentButtonText,
-                !showArchived && styles.segmentButtonTextActive,
+                styles.segmentButton,
+                !showArchived && styles.segmentButtonActive,
               ]}
+              onPress={() => setShowArchived(false)}
             >
-              Active
-            </Text>
-          </Pressable>
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  !showArchived && styles.segmentButtonTextActive,
+                ]}
+              >
+                New
+              </Text>
+            </Pressable>
 
-          <Pressable
-            style={[
-              styles.segmentButton,
-              showArchived && styles.segmentButtonActive,
-            ]}
-            onPress={() => setShowArchived(true)}
-          >
-            <Text
+            <Pressable
               style={[
-                styles.segmentButtonText,
-                showArchived && styles.segmentButtonTextActive,
+                styles.segmentButton,
+                showArchived && styles.segmentButtonActive,
               ]}
+              onPress={() => setShowArchived(true)}
             >
-              Archive
-            </Text>
-          </Pressable>
-        </View>
-      ) : null}
+              <Text
+                style={[
+                  styles.segmentButtonText,
+                  showArchived && styles.segmentButtonTextActive,
+                ]}
+              >
+                Archive
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.section}>
@@ -240,7 +238,7 @@ export default function RecommendationsScreen() {
           visibleRecommendations.map((recommendation) => (
             <Swipeable
               key={recommendation.id}
-              renderLeftActions={() => renderPinAction(recommendation)}
+              renderLeftActions={() => renderSaveAction(recommendation)}
               renderRightActions={() => renderArchiveAction(recommendation)}
               overshootLeft={false}
               overshootRight={false}
@@ -248,7 +246,6 @@ export default function RecommendationsScreen() {
               <Pressable
                 style={[
                   styles.recommendationCard,
-                  recommendation.pinned && styles.pinnedCard,
                   recommendation.archived && styles.archivedCard,
                   !recommendation.read && styles.unreadCard,
                 ]}
@@ -270,16 +267,6 @@ export default function RecommendationsScreen() {
                   </View>
 
                   <View style={styles.badgeRow}>
-                    {recommendation.pinned ? (
-                      <View style={styles.iconPill}>
-                        <Ionicons
-                          name="bookmark"
-                          size={14}
-                          color={GimaColors.ocean}
-                        />
-                      </View>
-                    ) : null}
-
                     {recommendation.archived ? (
                       <View style={styles.iconPill}>
                         <Ionicons
@@ -317,7 +304,7 @@ export default function RecommendationsScreen() {
                 <View style={styles.swipeHintRow}>
                   <Text style={styles.swipeHint}>Swipe right to save</Text>
                   <Text style={styles.swipeHint}>
-                    {showArchived ? 'Swipe left to unarchive' : 'Swipe left to archive'}
+                    {showArchived ? 'Swipe left to restore' : 'Swipe left to archive'}
                   </Text>
                 </View>
               </Pressable>
@@ -326,12 +313,12 @@ export default function RecommendationsScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>
-              {showArchived ? 'No archived recommendations' : 'No recommendations yet'}
+              {showArchived ? 'No archived recommendations' : 'No new recommendations'}
             </Text>
             <Text style={styles.emptyText}>
               {showArchived
                 ? 'Archived recommendations will appear here.'
-                : 'When someone recommends a place to you, it will appear here.'}
+                : 'New recommendations will appear here until you save or archive them.'}
             </Text>
           </View>
         )}
@@ -380,23 +367,19 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     padding: 4,
   },
-
   segmentButton: {
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 999,
   },
-
   segmentButtonActive: {
     backgroundColor: GimaColors.coral,
   },
-
   segmentButtonText: {
     fontSize: 12,
     fontWeight: '800',
     color: GimaColors.mutedText,
   },
-
   segmentButtonTextActive: {
     color: '#fff',
   },
@@ -417,10 +400,6 @@ const styles = StyleSheet.create({
   },
   unreadCard: {
     borderColor: GimaColors.coral,
-    borderWidth: 1.5,
-  },
-  pinnedCard: {
-    borderColor: GimaColors.ocean,
     borderWidth: 1.5,
   },
   archivedCard: {
@@ -557,9 +536,5 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '800',
-  },
-  pressedButton: {
-    opacity: 0.78,
-    transform: [{ scale: 0.98 }],
   },
 });
