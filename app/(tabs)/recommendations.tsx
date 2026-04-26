@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -118,6 +119,8 @@ export default function RecommendationsScreen() {
   }, [recommendations, showArchived]);
 
   async function handleSavePlace(recommendation: RecommendationWithBusiness) {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
     if (!recommendation.business) return;
 
     if (!isSaved(recommendation.business.slug)) {
@@ -134,6 +137,8 @@ export default function RecommendationsScreen() {
   }
 
   async function handleArchive(recommendation: RecommendationWithBusiness) {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     await updateRecommendationArchived(recommendation.id, true);
 
     setRecommendations((current) =>
@@ -153,6 +158,10 @@ export default function RecommendationsScreen() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
+            await Haptics.notificationAsync(
+              Haptics.NotificationFeedbackType.Warning,
+            );
+
             await deleteRecommendation(recommendation.id);
 
             setRecommendations((current) =>
@@ -315,7 +324,7 @@ export default function RecommendationsScreen() {
                       <Text style={styles.recommendedBy}>
                         Recommended by{" "}
                         {recommendation.fromUsername ||
-                          recommendation.fromEmail}{" "}
+                          recommendation.fromEmail}
                       </Text>
 
                       <Text style={styles.sentAt}>
