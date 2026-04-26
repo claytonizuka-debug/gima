@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
   onSnapshot,
@@ -117,11 +118,6 @@ export async function updateRecommendationArchived(
   });
 }
 
-export async function updateRecommendationPinned(
-  recommendationId: string,
-  pinned: boolean
-) {
-  await updateDoc(doc(db, 'recommendations', recommendationId), {
-    pinned,
-  });
+export async function deleteRecommendation(recommendationId: string) {
+  await deleteDoc(doc(db, 'recommendations', recommendationId));
 }

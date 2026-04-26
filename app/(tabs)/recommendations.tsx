@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,7 @@ import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
 
 import { getBusinessBySlug, type Business } from '../../services/businessService';
 import {
+  deleteRecommendation,
   getRecommendationsForUser,
   markAllRecommendationsAsRead,
   updateRecommendationArchived,
@@ -120,18 +121,34 @@ export default function RecommendationsScreen() {
     );
   }
 
-  async function handleToggleArchive(recommendation: RecommendationWithBusiness) {
-    await updateRecommendationArchived(
-      recommendation.id,
-      !recommendation.archived
-    );
+  async function handleArchive(recommendation: RecommendationWithBusiness) {
+    await updateRecommendationArchived(recommendation.id, true);
 
     setRecommendations((current) =>
       current.map((item) =>
-        item.id === recommendation.id
-          ? { ...item, archived: !recommendation.archived }
-          : item
+        item.id === recommendation.id ? { ...item, archived: true } : item
       )
+    );
+  }
+
+  function handleDelete(recommendation: RecommendationWithBusiness) {
+    Alert.alert(
+      'Delete recommendation',
+      'This will permanently delete this recommendation.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteRecommendation(recommendation.id);
+
+            setRecommendations((current) =>
+              current.filter((item) => item.id !== recommendation.id)
+            );
+          },
+        },
+      ]
     );
   }
 
@@ -150,13 +167,20 @@ export default function RecommendationsScreen() {
     return (
       <Pressable
         style={styles.rightSwipeAction}
-        onPress={() => handleToggleArchive(recommendation)}
+        onPress={() => handleArchive(recommendation)}
       >
-        <Ionicons
-          name={recommendation.archived ? 'arrow-undo' : 'archive-outline'}
-          size={24}
-          color="#fff"
-        />
+        <Ionicons name="archive-outline" size={24} color="#fff" />
+      </Pressable>
+    );
+  }
+
+  function renderDeleteAction(recommendation: RecommendationWithBusiness) {
+    return (
+      <Pressable
+        style={styles.deleteSwipeAction}
+        onPress={() => handleDelete(recommendation)}
+      >
+        <Ionicons name="trash-outline" size={24} color="#fff" />
       </Pressable>
     );
   }
@@ -235,81 +259,102 @@ export default function RecommendationsScreen() {
             </Pressable>
           </View>
         ) : visibleRecommendations.length > 0 ? (
-          visibleRecommendations.map((recommendation) => (
-            <Swipeable
-              key={recommendation.id}
-              renderLeftActions={() => renderSaveAction(recommendation)}
-              renderRightActions={() => renderArchiveAction(recommendation)}
-              overshootLeft={false}
-              overshootRight={false}
-            >
-              <Pressable
-                style={[
-                  styles.recommendationCard,
-                  recommendation.archived && styles.archivedCard,
-                  !recommendation.read && styles.unreadCard,
-                ]}
-                onPress={() => {
-                  if (recommendation.business) {
-                    router.push(`/business/${recommendation.business.slug}` as any);
-                  }
-                }}
+          visibleRecommendations.map((recommendation) => {
+            const businessSaved =
+              recommendation.business ? isSaved(recommendation.business.slug) : false;
+
+            return (
+              <Swipeable
+                key={recommendation.id}
+                renderLeftActions={
+                  showArchived ? undefined : () => renderSaveAction(recommendation)
+                }
+                renderRightActions={() =>
+                  showArchived
+                    ? renderDeleteAction(recommendation)
+                    : renderArchiveAction(recommendation)
+                }
+                overshootLeft={false}
+                overshootRight={false}
               >
-                <View style={styles.cardTopRow}>
-                  <View style={styles.senderBlock}>
-                    <Text style={styles.recommendedBy}>
-                      Recommended by {recommendation.fromEmail}
-                    </Text>
+                <Pressable
+                  style={[
+                    styles.recommendationCard,
+                    businessSaved && styles.savedCard,
+                    recommendation.archived && styles.archivedCard,
+                    !recommendation.read && styles.unreadCard,
+                  ]}
+                  onPress={() => {
+                    if (recommendation.business) {
+                      router.push(`/business/${recommendation.business.slug}` as any);
+                    }
+                  }}
+                >
+                  <View style={styles.cardTopRow}>
+                    <View style={styles.senderBlock}>
+                      <Text style={styles.recommendedBy}>
+                        Recommended by {recommendation.fromEmail}
+                      </Text>
 
-                    <Text style={styles.sentAt}>
-                      {formatRecommendationDate(recommendation.createdAt)}
-                    </Text>
+                      <Text style={styles.sentAt}>
+                        {formatRecommendationDate(recommendation.createdAt)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.badgeRow}>
+                      {businessSaved ? (
+                        <View style={styles.savedPill}>
+                          <Ionicons name="bookmark" size={12} color="#fff" />
+                          <Text style={styles.savedPillText}>Saved</Text>
+                        </View>
+                      ) : null}
+
+                      {recommendation.archived ? (
+                        <View style={styles.iconPill}>
+                          <Ionicons
+                            name="archive-outline"
+                            size={14}
+                            color={GimaColors.mutedText}
+                          />
+                        </View>
+                      ) : null}
+
+                      {!recommendation.read ? (
+                        <View style={styles.unreadPill}>
+                          <Text style={styles.unreadPillText}>New</Text>
+                        </View>
+                      ) : null}
+                    </View>
                   </View>
 
-                  <View style={styles.badgeRow}>
-                    {recommendation.archived ? (
-                      <View style={styles.iconPill}>
-                        <Ionicons
-                          name="archive-outline"
-                          size={14}
-                          color={GimaColors.mutedText}
-                        />
-                      </View>
-                    ) : null}
-
-                    {!recommendation.read ? (
-                      <View style={styles.unreadPill}>
-                        <Text style={styles.unreadPillText}>New</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-
-                <Text style={styles.businessName}>
-                  {recommendation.business?.name ?? 'Business not found'}
-                </Text>
-
-                <Text style={styles.businessDescription}>
-                  {recommendation.business?.shortDescription ??
-                    'This business may no longer be available.'}
-                </Text>
-
-                {recommendation.message ? (
-                  <View style={styles.messageBubble}>
-                    <Text style={styles.messageLabel}>Message</Text>
-                    <Text style={styles.messageText}>“{recommendation.message}”</Text>
-                  </View>
-                ) : null}
-
-                <View style={styles.swipeHintRow}>
-                  <Text style={styles.swipeHint}>Swipe right to save</Text>
-                  <Text style={styles.swipeHint}>
-                    {showArchived ? 'Swipe left to restore' : 'Swipe left to archive'}
+                  <Text style={styles.businessName}>
+                    {recommendation.business?.name ?? 'Business not found'}
                   </Text>
-                </View>
-              </Pressable>
-            </Swipeable>
-          ))
+
+                  <Text style={styles.businessDescription}>
+                    {recommendation.business?.shortDescription ??
+                      'This business may no longer be available.'}
+                  </Text>
+
+                  {recommendation.message ? (
+                    <View style={styles.messageBubble}>
+                      <Text style={styles.messageLabel}>Message</Text>
+                      <Text style={styles.messageText}>“{recommendation.message}”</Text>
+                    </View>
+                  ) : null}
+
+                  <View style={styles.swipeHintRow}>
+                    <Text style={styles.swipeHint}>
+                      {showArchived ? 'Saved status shown above' : 'Swipe right to save'}
+                    </Text>
+                    <Text style={styles.swipeHint}>
+                      {showArchived ? 'Swipe left to delete' : 'Swipe left to archive'}
+                    </Text>
+                  </View>
+                </Pressable>
+              </Swipeable>
+            );
+          })
         ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyTitle}>
@@ -402,8 +447,11 @@ const styles = StyleSheet.create({
     borderColor: GimaColors.coral,
     borderWidth: 1.5,
   },
+  savedCard: {
+    borderColor: GimaColors.leaf,
+    borderWidth: 1.5,
+  },
   archivedCard: {
-    borderColor: GimaColors.border,
     borderWidth: 1,
   },
   cardTopRow: {
@@ -436,6 +484,20 @@ const styles = StyleSheet.create({
     borderColor: GimaColors.border,
     padding: 6,
     borderRadius: 999,
+  },
+  savedPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: GimaColors.leaf,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  savedPillText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '800',
   },
   unreadPill: {
     backgroundColor: GimaColors.coral,
@@ -501,6 +563,14 @@ const styles = StyleSheet.create({
   },
   rightSwipeAction: {
     backgroundColor: GimaColors.coral,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 112,
+    borderRadius: 18,
+    marginBottom: 14,
+  },
+  deleteSwipeAction: {
+    backgroundColor: '#DC2626',
     justifyContent: 'center',
     alignItems: 'center',
     width: 112,

@@ -41,35 +41,52 @@ export default function SavedScreen() {
       <View style={styles.resultsHeader}>
         <View>
           <Text style={styles.resultsTitle}>Saved</Text>
-          <Text style={styles.resultsCaption}>Your personal island list</Text>
+          <Text style={styles.resultsCaption}>
+            Your personal island list
+          </Text>
         </View>
 
         {!isLoading && (
           <View style={styles.countPill}>
-            <Text style={styles.countPillText}>{savedList.length}</Text>
+            <Text style={styles.countPillText}>
+              {savedList.length}
+            </Text>
           </View>
         )}
       </View>
 
       <View style={styles.section}>
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 3 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))
         ) : savedList.length > 0 ? (
           savedList.map((business) => (
-            <BusinessCard
-              key={business.slug}
-              name={business.name}
-              description={business.shortDescription}
-              image={business.image}
-              onPress={() => router.push(`/business/${business.slug}` as any)}
-            />
+            <View key={business.slug} style={styles.savedWrapper}>
+              {/* Leaf indicator */}
+              <View style={styles.savedBadge}>
+                <Text style={styles.savedBadgeText}>Saved</Text>
+              </View>
+
+              <BusinessCard
+                name={business.name}
+                description={business.shortDescription}
+                image={business.image}
+                onPress={() =>
+                  router.push(`/business/${business.slug}` as any)
+                }
+                style={styles.savedCard}
+              />
+            </View>
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No saved places yet</Text>
+            <Text style={styles.emptyTitle}>
+              No saved places yet
+            </Text>
             <Text style={styles.emptyText}>
-              Save businesses from Discover, business pages, or recommendations
-              to quickly find them later.
+              Save businesses from Discover or recommendations
+              to build your list.
             </Text>
           </View>
         )}
@@ -87,6 +104,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 36,
   },
+
   hero: {
     marginBottom: 22,
   },
@@ -108,6 +126,7 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     lineHeight: 24,
   },
+
   resultsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -124,6 +143,7 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginTop: 2,
   },
+
   countPill: {
     backgroundColor: GimaColors.card,
     borderWidth: 1,
@@ -137,9 +157,38 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: GimaColors.text,
   },
+
   section: {
     marginBottom: 18,
   },
+
+  savedWrapper: {
+    position: 'relative',
+    marginBottom: 12,
+  },
+
+  savedCard: {
+    borderColor: GimaColors.leaf,
+    borderWidth: 1.5,
+    borderRadius: 18,
+  },
+
+  savedBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 12,
+    zIndex: 10,
+    backgroundColor: GimaColors.leaf,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  savedBadgeText: {
+    color: '#fff',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+
   emptyState: {
     backgroundColor: GimaColors.card,
     borderRadius: 18,

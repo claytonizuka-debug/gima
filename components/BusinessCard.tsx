@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  StyleProp,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  ViewStyle,
 } from 'react-native';
 
 import { GimaColors } from '@/constants/gimaTheme';
@@ -14,9 +16,16 @@ type BusinessCardProps = {
   description: string;
   image: string;
   onPress?: () => void;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function BusinessCard({ name, description, image, onPress }: BusinessCardProps) {
+export function BusinessCard({
+  name,
+  description,
+  image,
+  onPress,
+  style,
+}: BusinessCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const placeholderOpacity = useRef(new Animated.Value(1)).current;
@@ -40,26 +49,32 @@ export function BusinessCard({ name, description, image, onPress }: BusinessCard
   }, [imageLoaded]);
 
   return (
-    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
-      <View style={styles.imageWrapper}>
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.placeholder, { opacity: placeholderOpacity }]}
-        />
+    <TouchableOpacity
+      style={[styles.card, style]}
+      onPress={onPress}
+      activeOpacity={0.9}
+    >
+      <View style={styles.inner}>
+        <View style={styles.imageWrapper}>
+          <Animated.View
+            pointerEvents="none"
+            style={[styles.placeholder, { opacity: placeholderOpacity }]}
+          />
 
-        <Animated.Image
-          source={{ uri: image }}
-          style={[styles.image, { opacity: imageOpacity }]}
-          onLoad={() => setImageLoaded(true)}
-        />
-      </View>
+          <Animated.Image
+            source={{ uri: image }}
+            style={[styles.image, { opacity: imageOpacity }]}
+            onLoad={() => setImageLoaded(true)}
+          />
+        </View>
 
-      <View style={styles.textContainer}>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.description}>{description}</Text>
+        <View style={styles.textContainer}>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.description}>{description}</Text>
+        </View>
       </View>
     </TouchableOpacity>
-  );
+    );
 }
 
 const styles = StyleSheet.create({
@@ -67,18 +82,19 @@ const styles = StyleSheet.create({
     backgroundColor: GimaColors.card,
     borderRadius: 16,
     marginBottom: 14,
-    overflow: 'hidden',
     borderWidth: 1,
     borderColor: GimaColors.border,
   },
   imageWrapper: {
     width: '100%',
     height: 170,
-    backgroundColor: '#eaeaea',
+    overflow: 'hidden',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   placeholder: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#eaeaea',
+    backgroundColor: GimaColors.card,
   },
   image: {
     width: '100%',
@@ -97,4 +113,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GimaColors.mutedText,
   },
+  inner: {
+  overflow: 'hidden',
+  borderRadius: 16,
+},
 });
