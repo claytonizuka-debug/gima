@@ -6,6 +6,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,13 +14,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GimaColors } from "@/constants/gimaTheme";
 import { useAuth } from "@/context/AuthContext";
 import { logOut } from "../../services/authService";
-import { getUserProfile, type UserProfile } from "../../services/userService";
+import {
+  getUserProfile,
+  updateUsername,
+  type UserProfile,
+} from "../../services/userService";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -31,6 +39,7 @@ export default function ProfileScreen() {
       try {
         const data = await getUserProfile(user.uid);
         setProfile(data);
+        setUsernameInput(data?.username || user.email?.split("@")[0] || "");
       } catch (error) {
         console.error("Error loading profile:", error);
       }
@@ -38,6 +47,35 @@ export default function ProfileScreen() {
 
     loadProfile();
   }, [user]);
+
+  async function handleSaveUsername() {
+    if (!user) return;
+
+    try {
+      setSavingUsername(true);
+
+      const cleanUsername = await updateUsername(user.uid, usernameInput);
+
+      setProfile((current) =>
+        current ? { ...current, username: cleanUsername } : current,
+      );
+
+      setUsernameInput(cleanUsername);
+      setEditingUsername(false);
+
+      Alert.alert(
+        "Username updated",
+        `Your username is now @${cleanUsername}.`,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not update username.";
+
+      Alert.alert("Username unavailable", message);
+    } finally {
+      setSavingUsername(false);
+    }
+  }
 
   async function handleLogout() {
     try {
@@ -68,10 +106,65 @@ export default function ProfileScreen() {
       {user ? (
         <>
           <View style={styles.card}>
-            <Text style={styles.label}>Username</Text>
-            <Text style={styles.value}>
-              @{profile?.username || user.email?.split("@")[0] || "user"}
-            </Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>Username</Text>
+
+              {!editingUsername ? (
+                <Pressable onPress={() => setEditingUsername(true)}>
+                  <Text style={styles.editText}>Edit</Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            {editingUsername ? (
+              <>
+                <TextInput
+                  style={styles.input}
+                  value={usernameInput}
+                  onChangeText={setUsernameInput}
+                  placeholder="Username"
+                  placeholderTextColor={GimaColors.mutedText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+
+                <Text style={styles.usernameHint}>
+                  Use letters, numbers, and underscores only.
+                </Text>
+
+                <View style={styles.editActions}>
+                  <Pressable
+                    style={styles.cancelEditButton}
+                    onPress={() => {
+                      setUsernameInput(
+                        profile?.username || user.email?.split("@")[0] || "",
+                      );
+                      setEditingUsername(false);
+                    }}
+                    disabled={savingUsername}
+                  >
+                    <Text style={styles.cancelEditButtonText}>Cancel</Text>
+                  </Pressable>
+
+                  <Pressable
+                    style={[
+                      styles.saveEditButton,
+                      savingUsername && styles.disabledButton,
+                    ]}
+                    onPress={handleSaveUsername}
+                    disabled={savingUsername}
+                  >
+                    <Text style={styles.saveEditButtonText}>
+                      {savingUsername ? "Saving..." : "Save"}
+                    </Text>
+                  </Pressable>
+                </View>
+              </>
+            ) : (
+              <Text style={styles.value}>
+                @{profile?.username || user.email?.split("@")[0] || "user"}
+              </Text>
+            )}
 
             <View style={styles.divider} />
 
@@ -140,6 +233,12 @@ const styles = StyleSheet.create({
     borderColor: GimaColors.border,
     marginBottom: 14,
   },
+  labelRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
   label: {
     fontSize: 12,
     fontWeight: "800",
@@ -148,10 +247,64 @@ const styles = StyleSheet.create({
     color: GimaColors.mutedText,
     marginBottom: 6,
   },
+  editText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: GimaColors.coral,
+  },
   value: {
     fontSize: 18,
     fontWeight: "800",
     color: GimaColors.ocean,
+  },
+  input: {
+    backgroundColor: GimaColors.background,
+    borderWidth: 1.5,
+    borderColor: GimaColors.coral,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 16,
+    fontWeight: "700",
+    color: GimaColors.text,
+  },
+  usernameHint: {
+    fontSize: 12,
+    color: GimaColors.mutedText,
+    marginTop: 8,
+    lineHeight: 18,
+  },
+  editActions: {
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 14,
+  },
+  cancelEditButton: {
+    flex: 1,
+    backgroundColor: GimaColors.background,
+    borderWidth: 1,
+    borderColor: GimaColors.border,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  cancelEditButtonText: {
+    color: GimaColors.mutedText,
+    fontWeight: "800",
+  },
+  saveEditButton: {
+    flex: 1,
+    backgroundColor: GimaColors.coral,
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  saveEditButtonText: {
+    color: "#fff",
+    fontWeight: "800",
+  },
+  disabledButton: {
+    opacity: 0.65,
   },
   divider: {
     height: 1,

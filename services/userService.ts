@@ -5,6 +5,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 
@@ -84,4 +85,34 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
   }
 
   return snapshot.data() as UserProfile;
+}
+
+export async function updateUsername(uid: string, username: string) {
+  const cleanUsername = username.trim().replace("@", "").toLowerCase();
+
+  if (!cleanUsername) {
+    throw new Error("Username is required.");
+  }
+
+  if (cleanUsername.length < 3) {
+    throw new Error("Username must be at least 3 characters.");
+  }
+
+  if (!/^[a-z0-9_]+$/.test(cleanUsername)) {
+    throw new Error("Username can only use letters, numbers, and underscores.");
+  }
+
+  const existingUser = await getUserByUsername(cleanUsername);
+
+  if (existingUser && existingUser.uid !== uid) {
+    throw new Error("That username is already taken.");
+  }
+
+  const userRef = doc(db, "users", uid);
+
+  await updateDoc(userRef, {
+    username: cleanUsername,
+  });
+
+  return cleanUsername;
 }
