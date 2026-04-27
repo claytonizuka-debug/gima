@@ -1,7 +1,10 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
+  Image,
   ImageBackground,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,17 +16,77 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BusinessCard } from "@/components/BusinessCard";
 import { SkeletonCard } from "@/components/SkeletonCard";
 import { BidaColors } from "@/constants/bidaTheme";
+import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
 import { useBusinesses } from "@/hooks/useBusinesses";
+
+const topBeaches = [
+  {
+    id: "beach:micro-beach",
+    name: "Micro Beach",
+    description: "Calm waters, sunsets, and easy access in Garapan.",
+    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900",
+    lat: 15.215,
+    lng: 145.715,
+  },
+  {
+    id: "beach:ladder-beach",
+    name: "Ladder Beach",
+    description: "A quiet beach spot with cliffs and clear water.",
+    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=900",
+    lat: 15.1255,
+    lng: 145.729,
+  },
+  {
+    id: "beach:obyan-beach",
+    name: "Obyan Beach",
+    description: "Popular for snorkeling, sand, and peaceful views.",
+    image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=900",
+    lat: 15.1186,
+    lng: 145.7508,
+  },
+];
+
+function openMaps(lat: number, lng: number, name: string) {
+  const label = encodeURIComponent(name);
+
+  const url =
+    Platform.OS === "ios"
+      ? `http://maps.apple.com/?ll=${lat},${lng}&q=${label}`
+      : `geo:${lat},${lng}?q=${lat},${lng}(${label})`;
+
+  Linking.openURL(url);
+}
+
+function openMapsForBusiness(business: any) {
+  if (business.lat && business.lng) {
+    openMaps(business.lat, business.lng, business.name);
+    return;
+  }
+
+  const query = encodeURIComponent(
+    `${business.name} ${business.location} Saipan CNMI`,
+  );
+
+  const url =
+    Platform.OS === "ios"
+      ? `http://maps.apple.com/?q=${query}`
+      : `geo:0,0?q=${query}`;
+
+  Linking.openURL(url);
+}
 
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { businesses, loading } = useBusinesses();
+  const { savedSlugs, toggleSaved } = useSavedBusinesses();
 
-  const openNowBusinesses = businesses.filter((b) => b.section === "Open Now");
+  const openNowBusinesses = businesses.filter(
+    (business) => business.section === "Open Now",
+  );
 
   const happeningTodayBusinesses = businesses.filter(
-    (b) => b.section === "Happening Today",
+    (business) => business.section === "Happening Today",
   );
 
   return (
@@ -32,7 +95,7 @@ export default function HomeScreen() {
       contentContainerStyle={{ paddingBottom: 36 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* 🔥 HERO (FULL BLEED, SAFE AREA FIXED) */}
+      {/* HERO */}
       <View style={styles.heroWrapper}>
         <ImageBackground
           source={{
@@ -41,33 +104,75 @@ export default function HomeScreen() {
           style={[styles.heroImage, { height: 220 + insets.top }]}
         >
           <LinearGradient
-            colors={["transparent", "rgba(0,0,0,0.65)"]}
+            colors={["transparent", "rgba(0,0,0,0.68)"]}
             style={[styles.heroOverlay, { paddingTop: insets.top }]}
           >
             <Text style={styles.heroEyebrow}>SAIPAN • CNMI</Text>
             <Text style={styles.heroTitle}>Bida</Text>
             <Text style={styles.heroSubtitle}>
-              Discover local spots, daily finds, and island recommendations.
+              Discover beaches, food, events, and local places around the
+              islands.
             </Text>
           </LinearGradient>
         </ImageBackground>
       </View>
 
-      {/* CONTENT BELOW HERO */}
       <View style={styles.content}>
+        {/* TOP BEACHES */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Beaches</Text>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {topBeaches.map((beach) => {
+              const isSaved = savedSlugs.includes(beach.id);
+
+              return (
+                <Pressable
+                  key={beach.id}
+                  style={[styles.beachCard, isSaved && styles.savedBeachCard]}
+                  onPress={() => openMaps(beach.lat, beach.lng, beach.name)}
+                >
+                  <Image
+                    source={{ uri: beach.image }}
+                    style={styles.beachImage}
+                  />
+
+                  <Pressable
+                    style={[
+                      styles.saveButton,
+                      isSaved && styles.saveButtonActive,
+                    ]}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleSaved(beach.id);
+                    }}
+                  >
+                    <Text style={styles.saveButtonText}>
+                      {isSaved ? "✓" : "🌿"}
+                    </Text>
+                  </Pressable>
+
+                  <View style={styles.beachText}>
+                    <Text style={styles.beachName}>{beach.name}</Text>
+                    <Text style={styles.beachDescription}>
+                      {beach.description}
+                    </Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+
         {/* OPEN NOW */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionTitle}>Open Now</Text>
-              <Text style={styles.sectionCaption}>Ready when you are</Text>
-            </View>
-
-            <View style={styles.sectionDot} />
-          </View>
+          <Text style={styles.sectionTitle}>Open Now</Text>
 
           {loading ? (
-            Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
           ) : openNowBusinesses.length > 0 ? (
             openNowBusinesses.map((business) => (
               <BusinessCard
@@ -75,34 +180,23 @@ export default function HomeScreen() {
                 name={business.name}
                 description={business.shortDescription}
                 image={business.image}
-                onPress={() => router.push(`/business/${business.slug}` as any)}
+                onPress={() => openMapsForBusiness(business)}
               />
             ))
           ) : (
-            <Text style={styles.helperText}>No businesses found.</Text>
+            <Text style={styles.emptyText}>Nothing open right now</Text>
           )}
-
-          <Pressable
-            style={styles.ctaButton}
-            onPress={() => router.push("/discover")}
-          >
-            <Text style={styles.ctaButtonText}>Explore More</Text>
-          </Pressable>
         </View>
 
         {/* HAPPENING TODAY */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionTitle}>Happening Today</Text>
-              <Text style={styles.sectionCaption}>Island activity</Text>
-            </View>
-
-            <View style={styles.sectionDot} />
-          </View>
+          <Text style={styles.sectionTitle}>Happening Today</Text>
 
           {loading ? (
-            Array.from({ length: 2 }).map((_, i) => <SkeletonCard key={i} />)
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
           ) : happeningTodayBusinesses.length > 0 ? (
             happeningTodayBusinesses.map((business) => (
               <BusinessCard
@@ -110,11 +204,11 @@ export default function HomeScreen() {
                 name={business.name}
                 description={business.shortDescription}
                 image={business.image}
-                onPress={() => router.push(`/business/${business.slug}` as any)}
+                onPress={() => openMapsForBusiness(business)}
               />
             ))
           ) : (
-            <Text style={styles.helperText}>No businesses found.</Text>
+            <Text style={styles.emptyText}>Nothing listed today</Text>
           )}
         </View>
       </View>
@@ -127,81 +221,87 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BidaColors.background,
   },
-
-  /* HERO */
   heroWrapper: {
     marginBottom: 20,
   },
   heroImage: {
+    width: "100%",
     justifyContent: "flex-end",
   },
   heroOverlay: {
-    padding: 16,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   heroEyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
     color: "#fff",
-    marginBottom: 4,
+    fontWeight: "800",
   },
   heroTitle: {
-    fontSize: 32,
-    fontWeight: "900",
     color: "#fff",
-    marginBottom: 6,
+    fontSize: 36,
+    fontWeight: "900",
   },
   heroSubtitle: {
-    fontSize: 14,
-    color: "#f1f1f1",
-    lineHeight: 20,
+    color: "#fff",
   },
-
-  /* CONTENT */
   content: {
     paddingHorizontal: 20,
-    paddingBottom: 36,
   },
-
   section: {
-    marginBottom: 28,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 24,
   },
   sectionTitle: {
     fontSize: 22,
+    fontWeight: "900",
+    color: BidaColors.ocean,
+    marginBottom: 10,
+  },
+  beachCard: {
+    width: 220,
+    marginRight: 12,
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: BidaColors.border,
+    backgroundColor: BidaColors.card,
+  },
+  savedBeachCard: {
+    borderColor: BidaColors.leaf,
+    borderWidth: 2,
+  },
+  beachImage: {
+    width: "100%",
+    height: 130,
+  },
+  beachText: {
+    padding: 10,
+  },
+  beachName: {
     fontWeight: "800",
     color: BidaColors.ocean,
   },
-  sectionCaption: {
-    fontSize: 13,
+  beachDescription: {
     color: BidaColors.mutedText,
   },
-  sectionDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: BidaColors.coral,
-  },
-
-  helperText: {
-    fontSize: 15,
-    color: BidaColors.mutedText,
-  },
-
-  ctaButton: {
-    marginTop: 12,
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 12,
-    borderRadius: 10,
+  saveButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    width: 36,
+    height: 36,
     alignItems: "center",
+    justifyContent: "center",
   },
-  ctaButtonText: {
+  saveButtonActive: {
+    backgroundColor: BidaColors.leaf,
+  },
+  saveButtonText: {
     color: "#fff",
-    fontWeight: "800",
+    fontWeight: "900",
+  },
+  emptyText: {
+    color: BidaColors.mutedText,
   },
 });
