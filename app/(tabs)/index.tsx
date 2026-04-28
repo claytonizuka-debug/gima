@@ -18,10 +18,12 @@ import { SkeletonCard } from "@/components/SkeletonCard";
 import { BidaColors } from "@/constants/bidaTheme";
 import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
 import { useBusinesses } from "@/hooks/useBusinesses";
+import { Ionicons } from "@expo/vector-icons";
 
 const topBeaches = [
   {
     id: "beach:micro-beach",
+    slug: "micro-beach",
     name: "Micro Beach",
     description: "Calm waters, sunsets, and easy access in Garapan.",
     image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900",
@@ -30,6 +32,7 @@ const topBeaches = [
   },
   {
     id: "beach:ladder-beach",
+    slug: "ladder-beach",
     name: "Ladder Beach",
     description: "A quiet beach spot with cliffs and clear water.",
     image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=900",
@@ -38,6 +41,7 @@ const topBeaches = [
   },
   {
     id: "beach:obyan-beach",
+    slug: "obyan-beach",
     name: "Obyan Beach",
     description: "Popular for snorkeling, sand, and peaceful views.",
     image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=900",
@@ -130,7 +134,7 @@ export default function HomeScreen() {
                 <Pressable
                   key={beach.id}
                   style={[styles.beachCard, isSaved && styles.savedBeachCard]}
-                  onPress={() => openMaps(beach.lat, beach.lng, beach.name)}
+                  onPress={() => router.push(`/beach/${beach.slug}` as any)}
                 >
                   <Image
                     source={{ uri: beach.image }}
@@ -147,9 +151,11 @@ export default function HomeScreen() {
                       toggleSaved(beach.id);
                     }}
                   >
-                    <Text style={styles.saveButtonText}>
-                      {isSaved ? "✓" : "🌿"}
-                    </Text>
+                    <Ionicons
+                      name={isSaved ? "bookmark" : "bookmark-outline"}
+                      size={20}
+                      color="#fff"
+                    />
                   </Pressable>
 
                   <View style={styles.beachText}>
@@ -180,7 +186,7 @@ export default function HomeScreen() {
                 name={business.name}
                 description={business.shortDescription}
                 image={business.image}
-                onPress={() => openMapsForBusiness(business)}
+                onPress={() => router.push(`/business/${business.slug}` as any)}
               />
             ))
           ) : (
@@ -204,7 +210,7 @@ export default function HomeScreen() {
                 name={business.name}
                 description={business.shortDescription}
                 image={business.image}
-                onPress={() => openMapsForBusiness(business)}
+                onPress={() => router.push(`/business/${business.slug}` as any)}
               />
             ))
           ) : (
