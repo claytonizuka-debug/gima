@@ -11,10 +11,28 @@ import {
 
 import { db } from "../firebaseConfig";
 
+export type PreferredIsland = "Saipan" | "Tinian" | "Rota" | "Guam";
+
+export type PreferredLanguage =
+  | "English"
+  | "Chamorro"
+  | "Carolinian"
+  | "Japanese"
+  | "Korean"
+  | "Chinese";
+
+export type UserPreferences = {
+  preferredIsland: PreferredIsland;
+  preferredLanguage: PreferredLanguage;
+};
+
 export type UserProfile = {
   uid: string;
   email: string;
   username: string;
+  fullName?: string;
+  preferredIsland?: PreferredIsland;
+  preferredLanguage?: PreferredLanguage;
   createdAt: string;
 };
 
@@ -26,6 +44,7 @@ export async function createUserProfile(
   uid: string,
   email: string,
   username?: string,
+  fullName?: string,
 ) {
   const userRef = doc(db, "users", uid);
   const cleanEmail = email.toLowerCase();
@@ -38,6 +57,9 @@ export async function createUserProfile(
       uid,
       email: cleanEmail,
       username: cleanUsername,
+      fullName: fullName?.trim() || "",
+      preferredIsland: "Saipan",
+      preferredLanguage: "English",
       createdAt: new Date().toISOString(),
     },
     { merge: true },
@@ -115,4 +137,42 @@ export async function updateUsername(uid: string, username: string) {
   });
 
   return cleanUsername;
+}
+
+export async function updateFullName(uid: string, fullName: string) {
+  const cleanFullName = fullName.trim();
+
+  if (!cleanFullName) {
+    throw new Error("Full name is required.");
+  }
+
+  if (cleanFullName.length < 2) {
+    throw new Error("Full name must be at least 2 characters.");
+  }
+
+  if (cleanFullName.length > 60) {
+    throw new Error("Full name must be 60 characters or less.");
+  }
+
+  const userRef = doc(db, "users", uid);
+
+  await updateDoc(userRef, {
+    fullName: cleanFullName,
+  });
+
+  return cleanFullName;
+}
+
+export async function updateUserPreferences(
+  uid: string,
+  preferences: UserPreferences,
+) {
+  const userRef = doc(db, "users", uid);
+
+  await updateDoc(userRef, {
+    preferredIsland: preferences.preferredIsland,
+    preferredLanguage: preferences.preferredLanguage,
+  });
+
+  return preferences;
 }

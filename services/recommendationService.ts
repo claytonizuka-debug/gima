@@ -28,6 +28,11 @@ export type Recommendation = {
   archived?: boolean;
 };
 
+export type RecommendationStats = {
+  received: number;
+  sent: number;
+};
+
 type SendRecommendationInput = {
   toUserId: string;
   businessSlug: string;
@@ -83,6 +88,32 @@ export async function getRecommendationsForUser(
       archived: data.archived ?? false,
     };
   });
+}
+
+export async function getRecommendationStatsForUser(
+  userId: string,
+): Promise<RecommendationStats> {
+  const recommendationsRef = collection(db, "recommendations");
+
+  const receivedQuery = query(
+    recommendationsRef,
+    where("toUserId", "==", userId),
+  );
+
+  const sentQuery = query(
+    recommendationsRef,
+    where("fromUserId", "==", userId),
+  );
+
+  const [receivedSnapshot, sentSnapshot] = await Promise.all([
+    getDocs(receivedQuery),
+    getDocs(sentQuery),
+  ]);
+
+  return {
+    received: receivedSnapshot.size,
+    sent: sentSnapshot.size,
+  };
 }
 
 export async function markAllRecommendationsAsRead(userId: string) {

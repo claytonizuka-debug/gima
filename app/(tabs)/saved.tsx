@@ -218,7 +218,7 @@ function createStyles(colors: ReturnType<typeof useBidaTheme>) {
     title: {
       fontSize: 34,
       fontWeight: "900",
-      color: colors.text,
+      color: colors.ocean,
       marginBottom: 8,
     },
 

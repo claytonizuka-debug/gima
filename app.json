@@ -5,22 +5,32 @@
     "scheme": "bida",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/4.png",
+    "icon": "./assets/images/4.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/5.png",
+      "image": "./assets/images/5.png",
       "resizeMode": "contain",
       "backgroundColor": "#0B1E3B"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Bida uses your photo library so you can choose a profile photo."
+        }
+      ]
+    ],
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.bida"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/4.png",
+        "foregroundImage": "./assets/images/4.png",
         "backgroundColor": "#0B1E3B"
-      }
+      },
+      "package": "com.anonymous.bida"
     }
   }
 }
