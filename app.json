@@ -5,10 +5,10 @@
     "scheme": "bida",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/4.png",
+    "icon": "./assets/images/bida-icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/5.png",
+      "image": "./assets/images/bida-splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0B1E3B"
     },
@@ -27,7 +27,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/4.png",
+        "foregroundImage": "./assets/images/bida-icon.png",
         "backgroundColor": "#0B1E3B"
       },
       "package": "com.anonymous.bida"
