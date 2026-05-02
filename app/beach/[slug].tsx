@@ -12,47 +12,9 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BidaColors } from "@/constants/bidaTheme";
 import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
-
-const beaches = [
-  {
-    id: "beach:micro-beach",
-    slug: "micro-beach",
-    name: "Micro Beach",
-    description:
-      "Calm waters, sunset views, and easy access in Garapan. A great place for relaxing, swimming, and enjoying the ocean close to town.",
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200",
-    location: "Garapan, Saipan",
-    lat: 15.215,
-    lng: 145.715,
-  },
-  {
-    id: "beach:ladder-beach",
-    slug: "ladder-beach",
-    name: "Ladder Beach",
-    description:
-      "A quieter beach area known for cliffs, clear water, and a more tucked-away feel. Great for photos and peaceful ocean views.",
-    image:
-      "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=1200",
-    location: "Saipan",
-    lat: 15.1255,
-    lng: 145.729,
-  },
-  {
-    id: "beach:obyan-beach",
-    slug: "obyan-beach",
-    name: "Obyan Beach",
-    description:
-      "A beautiful beach known for sand, snorkeling, and peaceful views. A solid pick for visitors looking for a classic Saipan beach stop.",
-    image:
-      "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=1200",
-    location: "Obyan, Saipan",
-    lat: 15.1186,
-    lng: 145.7508,
-  },
-];
+import { beaches } from "@/data/beaches";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 
 function openMaps(lat: number, lng: number, name: string) {
   const label = encodeURIComponent(name);
@@ -69,6 +31,8 @@ export default function BeachDetailScreen() {
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
 
   const { savedSlugs, toggleSaved } = useSavedBusinesses();
 
@@ -102,7 +66,7 @@ export default function BeachDetailScreen() {
 
         <View style={styles.content}>
           <Pressable style={styles.backButton} onPress={() => router.back()}>
-            <Ionicons name="chevron-back" size={18} color={BidaColors.ocean} />
+            <Ionicons name="chevron-back" size={18} color={colors.ocean} />
             <Text style={styles.backButtonText}>Back</Text>
           </Pressable>
 
@@ -155,137 +119,139 @@ export default function BeachDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  image: {
-    width: "100%",
-    height: 260,
-  },
-  content: {
-    padding: 20,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    marginBottom: 14,
-  },
-  backButtonText: {
-    color: BidaColors.ocean,
-    fontWeight: "800",
-    marginLeft: 2,
-  },
-  metaRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
-  },
-  categoryPill: {
-    backgroundColor: BidaColors.oceanLight,
-    color: BidaColors.ocean,
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  savedPill: {
-    backgroundColor: BidaColors.leaf,
-    color: "#fff",
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: BidaColors.mutedText,
-    marginBottom: 14,
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12,
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: BidaColors.ocean,
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-    gap: 6,
-  },
-  savedButton: {
-    backgroundColor: BidaColors.leaf,
-  },
-  actionButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-  },
-  directionsButton: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    borderWidth: 1.5,
-    borderColor: BidaColors.coral,
-    paddingVertical: 13,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  directionsButtonText: {
-    color: BidaColors.coral,
-    fontWeight: "800",
-  },
-  infoCard: {
-    backgroundColor: BidaColors.card,
-    padding: 16,
-    borderRadius: 14,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: BidaColors.mutedText,
-    marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  infoText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BidaColors.text,
-  },
-  emptyContainer: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  emptyText: {
-    color: BidaColors.mutedText,
-    textAlign: "center",
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    image: {
+      width: "100%",
+      height: 260,
+    },
+    content: {
+      padding: 20,
+    },
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      marginBottom: 14,
+    },
+    backButtonText: {
+      color: colors.ocean,
+      fontWeight: "800",
+      marginLeft: 2,
+    },
+    metaRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 10,
+    },
+    categoryPill: {
+      backgroundColor: colors.oceanLight,
+      color: colors.ocean,
+      overflow: "hidden",
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: "800",
+    },
+    savedPill: {
+      backgroundColor: colors.leaf,
+      color: "#fff",
+      overflow: "hidden",
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: "800",
+    },
+    title: {
+      fontSize: 30,
+      fontWeight: "900",
+      color: colors.ocean,
+      marginBottom: 8,
+    },
+    description: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: colors.mutedText,
+      marginBottom: 14,
+    },
+    actionRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 12,
+    },
+    saveButton: {
+      flex: 1,
+      backgroundColor: colors.ocean,
+      paddingVertical: 13,
+      borderRadius: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
+      gap: 6,
+    },
+    savedButton: {
+      backgroundColor: colors.leaf,
+    },
+    actionButtonText: {
+      color: "#fff",
+      fontWeight: "800",
+    },
+    directionsButton: {
+      flex: 1,
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      paddingVertical: 13,
+      borderRadius: 12,
+      alignItems: "center",
+    },
+    directionsButtonText: {
+      color: colors.coral,
+      fontWeight: "800",
+    },
+    infoCard: {
+      backgroundColor: colors.card,
+      padding: 16,
+      borderRadius: 14,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    label: {
+      fontSize: 12,
+      fontWeight: "800",
+      color: colors.mutedText,
+      marginBottom: 4,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    infoText: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.text,
+    },
+    emptyContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: colors.ocean,
+      marginBottom: 8,
+    },
+    emptyText: {
+      color: colors.mutedText,
+      textAlign: "center",
+    },
+  });
+}

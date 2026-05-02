@@ -1,17 +1,28 @@
-import { useEffect, useRef } from 'react';
-import { Animated, Easing, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, View } from "react-native";
+
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 
 export function SkeletonCard() {
-  const shimmerTranslate = useRef(new Animated.Value(-280)).current;
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
+
+  const shimmer = useRef(new Animated.Value(0.35)).current;
 
   useEffect(() => {
     const animation = Animated.loop(
-      Animated.timing(shimmerTranslate, {
-        toValue: 280,
-        duration: 1600, // slower = smoother
-        easing: Easing.linear,
-        useNativeDriver: true,
-      })
+      Animated.sequence([
+        Animated.timing(shimmer, {
+          toValue: 0.7,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmer, {
+          toValue: 0.35,
+          duration: 700,
+          useNativeDriver: true,
+        }),
+      ]),
     );
 
     animation.start();
@@ -19,71 +30,63 @@ export function SkeletonCard() {
     return () => {
       animation.stop();
     };
-  }, [shimmerTranslate]);
+  }, [shimmer]);
 
   return (
     <View style={styles.card}>
-      <View style={styles.image} />
-      <View style={styles.textContainer}>
-        <View style={styles.title} />
-        <View style={styles.line} />
-        <View style={styles.lineShort} />
-      </View>
+      <Animated.View style={[styles.image, { opacity: shimmer }]} />
 
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          styles.shimmerOverlay,
-          { transform: [{ translateX: shimmerTranslate }] }, // no rotation
-        ]}
-      />
+      <View style={styles.content}>
+        <Animated.View style={[styles.title, { opacity: shimmer }]} />
+        <Animated.View style={[styles.line, { opacity: shimmer }]} />
+        <Animated.View style={[styles.lineShort, { opacity: shimmer }]} />
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: 20,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ececec',
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: 170,
-    backgroundColor: '#e8e8e8', // softer base
-  },
-  textContainer: {
-    padding: 16,
-  },
-  title: {
-    height: 18,
-    width: '60%',
-    backgroundColor: '#e8e8e8',
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  line: {
-    height: 14,
-    width: '90%',
-    backgroundColor: '#e8e8e8',
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  lineShort: {
-    height: 14,
-    width: '70%',
-    backgroundColor: '#e8e8e8',
-    borderRadius: 6,
-  },
-  shimmerOverlay: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: 120, // narrower
-    backgroundColor: 'rgba(255,255,255,0.22)', // toned down
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 18,
+      marginBottom: 14,
+      overflow: "hidden",
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 2,
+    },
+    image: {
+      width: "100%",
+      height: 170,
+      backgroundColor: colors.oceanLight,
+    },
+    content: {
+      padding: 14,
+    },
+    title: {
+      height: 18,
+      width: "58%",
+      borderRadius: 8,
+      backgroundColor: colors.oceanLight,
+      marginBottom: 10,
+    },
+    line: {
+      height: 14,
+      width: "92%",
+      borderRadius: 8,
+      backgroundColor: colors.oceanLight,
+      marginBottom: 8,
+    },
+    lineShort: {
+      height: 14,
+      width: "64%",
+      borderRadius: 8,
+      backgroundColor: colors.oceanLight,
+    },
+  });
+}

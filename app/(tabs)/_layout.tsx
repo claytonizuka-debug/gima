@@ -1,16 +1,19 @@
-import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import React, { useEffect, useState } from "react";
 
-import { useAuth } from '@/context/AuthContext';
-import { useSavedBusinesses } from '@/context/SavedBusinessesContext';
-import { subscribeToUnreadRecommendationCount } from '../../services/recommendationService';
+import { useAuth } from "@/context/AuthContext";
+import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
+import { subscribeToUnreadRecommendationCount } from "../../services/recommendationService";
 
 export default function TabLayout() {
   const { user } = useAuth();
   const { savedSlugs } = useSavedBusinesses();
+  const colors = useBidaTheme();
 
-  const [unreadRecommendationsCount, setUnreadRecommendationsCount] = useState(0);
+  const [unreadRecommendationsCount, setUnreadRecommendationsCount] =
+    useState(0);
 
   useEffect(() => {
     if (!user) {
@@ -20,7 +23,7 @@ export default function TabLayout() {
 
     const unsubscribe = subscribeToUnreadRecommendationCount(
       user.uid,
-      setUnreadRecommendationsCount
+      setUnreadRecommendationsCount,
     );
 
     return unsubscribe;
@@ -30,13 +33,33 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#111',
+
+        tabBarActiveTintColor: colors.coral,
+        tabBarInactiveTintColor: colors.mutedText,
+
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          borderTopWidth: 1,
+        },
+
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
+        },
+
+        tabBarBadgeStyle: {
+          backgroundColor: colors.coral,
+          color: "#fff",
+          fontSize: 11,
+          fontWeight: "700",
+        },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home" size={size} color={color} />
           ),
@@ -46,7 +69,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Discover',
+          title: "Discover",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search" size={size} color={color} />
           ),
@@ -56,7 +79,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="saved"
         options={{
-          title: 'Saved',
+          title: "Saved",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bookmark" size={size} color={color} />
           ),
@@ -67,7 +90,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="recommendations"
         options={{
-          title: 'Inbox',
+          title: "Inbox",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="notifications" size={size} color={color} />
           ),
@@ -81,7 +104,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" size={size} color={color} />
           ),

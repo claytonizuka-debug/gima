@@ -14,10 +14,11 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BidaColors } from "@/constants/bidaTheme";
 import { useAuth } from "@/context/AuthContext";
 import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 
 import {
   getBusinessBySlug,
@@ -25,18 +26,22 @@ import {
 } from "../../services/businessService";
 import { sendRecommendation } from "../../services/recommendationService";
 import { getUserByUsername } from "../../services/userService";
+
 export default function BusinessDetailScreen() {
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const slug = Array.isArray(params.slug) ? params.slug[0] : params.slug;
 
   const { user } = useAuth();
   const { toggleSaved, isSaved, loading: savedLoading } = useSavedBusinesses();
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
 
   const [business, setBusiness] = useState<Business | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [recommendModalVisible, setRecommendModalVisible] = useState(false);
-  const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipientUsername, setRecipientUsername] = useState("");
   const [message, setMessage] = useState("");
   const [sendingRecommendation, setSendingRecommendation] = useState(false);
 
@@ -102,7 +107,7 @@ export default function BusinessDetailScreen() {
       return;
     }
 
-    setRecipientEmail("");
+    setRecipientUsername("");
     setMessage("");
     setRecommendModalVisible(true);
   }
@@ -111,7 +116,10 @@ export default function BusinessDetailScreen() {
     if (!user || !user.email) return;
 
     const fromEmail = user.email;
-    const cleanUsername = recipientEmail.trim().replace("@", "").toLowerCase();
+    const cleanUsername = recipientUsername
+      .trim()
+      .replace("@", "")
+      .toLowerCase();
     const cleanMessage = message.trim();
 
     if (!cleanUsername) {
@@ -143,7 +151,7 @@ export default function BusinessDetailScreen() {
       });
 
       setRecommendModalVisible(false);
-      setRecipientEmail("");
+      setRecipientUsername("");
       setMessage("");
 
       Alert.alert(
@@ -157,7 +165,24 @@ export default function BusinessDetailScreen() {
       setSendingRecommendation(false);
     }
   }
+
   function handleOpenMaps() {
+    const hasCoordinates =
+      typeof safeBusiness.lat === "number" &&
+      typeof safeBusiness.lng === "number";
+
+    if (hasCoordinates) {
+      const label = encodeURIComponent(safeBusiness.name);
+
+      const url =
+        Platform.OS === "ios"
+          ? `http://maps.apple.com/?ll=${safeBusiness.lat},${safeBusiness.lng}&q=${label}`
+          : `geo:${safeBusiness.lat},${safeBusiness.lng}?q=${safeBusiness.lat},${safeBusiness.lng}(${label})`;
+
+      Linking.openURL(url);
+      return;
+    }
+
     const destination = encodeURIComponent(
       `${safeBusiness.name} ${safeBusiness.location} Saipan CNMI`,
     );
@@ -186,7 +211,6 @@ export default function BusinessDetailScreen() {
 
   function handleCallBusiness() {
     if (!safeBusiness.phone) return;
-
     Linking.openURL(`tel:${safeBusiness.phone}`);
   }
 
@@ -204,7 +228,10 @@ export default function BusinessDetailScreen() {
     <>
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[
+          styles.content,
+          { paddingTop: insets.top + 18 },
+        ]}
         showsVerticalScrollIndicator={false}
       >
         <Image source={{ uri: safeBusiness.image }} style={styles.image} />
@@ -227,7 +254,9 @@ export default function BusinessDetailScreen() {
             onPress={handleSave}
             disabled={savedLoading}
           >
-            <Text style={styles.saveButtonText}>
+            <Text
+              style={[styles.saveButtonText, saved && styles.savedButtonText]}
+            >
               {saved ? "Saved" : "Save"}
             </Text>
           </Pressable>
@@ -334,17 +363,16 @@ export default function BusinessDetailScreen() {
             <TextInput
               style={styles.input}
               placeholder="Username"
-              placeholderTextColor={BidaColors.mutedText}
+              placeholderTextColor={colors.mutedText}
               autoCapitalize="none"
-              keyboardType="email-address"
-              value={recipientEmail}
-              onChangeText={setRecipientEmail}
+              value={recipientUsername}
+              onChangeText={setRecipientUsername}
             />
 
             <TextInput
               style={[styles.input, styles.messageInput]}
               placeholder="Message (optional)"
-              placeholderTextColor={BidaColors.mutedText}
+              placeholderTextColor={colors.mutedText}
               value={message}
               onChangeText={setMessage}
               multiline
@@ -371,7 +399,7 @@ export default function BusinessDetailScreen() {
               ]}
               onPress={() => {
                 setRecommendModalVisible(false);
-                setRecipientEmail("");
+                setRecipientUsername("");
                 setMessage("");
               }}
               disabled={sendingRecommendation}
@@ -385,252 +413,307 @@ export default function BusinessDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  image: {
-    width: "100%",
-    height: 240,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  metaRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 10,
-  },
-  categoryPill: {
-    backgroundColor: BidaColors.oceanLight,
-    color: BidaColors.ocean,
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  statusPill: {
-    backgroundColor: BidaColors.leaf,
-    color: "#fff",
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: "800",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  description: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: BidaColors.mutedText,
-    marginBottom: 12,
-  },
-  actionRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12,
-  },
-  saveButton: {
-    flex: 1,
-    backgroundColor: BidaColors.ocean,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  savedButton: {
-    backgroundColor: BidaColors.leaf,
-  },
-  saveButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-  },
-  recommendButton: {
-    flex: 1,
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  recommendButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-  },
-  pressedButton: {
-    opacity: 0.78,
-    transform: [{ scale: 0.98 }],
-  },
-  pressedLightButton: {
-    opacity: 0.6,
-  },
-  infoCard: {
-    backgroundColor: BidaColors.card,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: BidaColors.mutedText,
-    marginBottom: 4,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  infoText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BidaColors.text,
-  },
-  directionsButton: {
-    backgroundColor: BidaColors.background,
-    borderWidth: 1.5,
-    borderColor: BidaColors.coral,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  directionsButtonText: {
-    color: BidaColors.coral,
-    fontWeight: "800",
-  },
-  detailRow: {
-    borderBottomWidth: 1,
-    borderBottomColor: BidaColors.border,
-    paddingVertical: 10,
-  },
-  detailRowLast: {
-    paddingVertical: 10,
-  },
-  detailLabel: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: BidaColors.mutedText,
-    marginBottom: 3,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  detailValue: {
-    fontSize: 15,
-    color: BidaColors.text,
-    lineHeight: 21,
-  },
-  detailButtonRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
-  utilityButton: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    borderWidth: 1.5,
-    borderColor: BidaColors.coral,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  utilityButtonText: {
-    color: BidaColors.coral,
-    fontWeight: "800",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  modalCard: {
-    backgroundColor: BidaColors.card,
-    padding: 20,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 6,
-  },
-  modalSubtitle: {
-    fontSize: 15,
-    color: BidaColors.mutedText,
-    marginBottom: 14,
-  },
-  input: {
-    backgroundColor: BidaColors.background,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-    color: BidaColors.text,
-  },
-  messageInput: {
-    height: 90,
-    textAlignVertical: "top",
-  },
-  modalPrimaryButton: {
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  modalPrimaryButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-  },
-  cancelButton: {
-    alignItems: "center",
-    paddingVertical: 8,
-    borderRadius: 10,
-  },
-  cancelButtonText: {
-    color: BidaColors.mutedText,
-    fontWeight: "700",
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  loadingContainer: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    color: BidaColors.mutedText,
-  },
-  emptyContainer: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  emptyText: {
-    color: BidaColors.mutedText,
-    textAlign: "center",
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    content: {
+      padding: 20,
+      paddingBottom: 110,
+    },
+
+    image: {
+      width: "100%",
+      height: 240,
+      borderRadius: 22,
+      marginBottom: 16,
+      backgroundColor: colors.card,
+    },
+
+    metaRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 10,
+    },
+
+    categoryPill: {
+      backgroundColor: colors.card,
+      color: colors.coral,
+      overflow: "hidden",
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: "800",
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    statusPill: {
+      backgroundColor: colors.leaf,
+      color: "#fff",
+      overflow: "hidden",
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 999,
+      fontSize: 12,
+      fontWeight: "800",
+    },
+
+    title: {
+      fontSize: 30,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    description: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: colors.mutedText,
+      marginBottom: 14,
+    },
+
+    actionRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginBottom: 12,
+    },
+
+    saveButton: {
+      flex: 1,
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      paddingVertical: 13,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    savedButton: {
+      backgroundColor: colors.leaf,
+      borderColor: colors.leaf,
+    },
+
+    saveButtonText: {
+      color: colors.coral,
+      fontWeight: "900",
+    },
+
+    savedButtonText: {
+      color: "#fff",
+    },
+
+    recommendButton: {
+      flex: 1,
+      backgroundColor: colors.coral,
+      paddingVertical: 13,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    recommendButtonText: {
+      color: "#fff",
+      fontWeight: "900",
+    },
+
+    pressedButton: {
+      opacity: 0.78,
+      transform: [{ scale: 0.98 }],
+    },
+
+    pressedLightButton: {
+      opacity: 0.6,
+    },
+
+    infoCard: {
+      backgroundColor: colors.card,
+      padding: 18,
+      borderRadius: 22,
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    label: {
+      fontSize: 12,
+      fontWeight: "900",
+      color: colors.mutedText,
+      marginBottom: 6,
+      textTransform: "uppercase",
+      letterSpacing: 0.8,
+    },
+
+    infoText: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.text,
+    },
+
+    directionsButton: {
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      paddingVertical: 12,
+      borderRadius: 14,
+      alignItems: "center",
+      marginTop: 12,
+    },
+
+    directionsButtonText: {
+      color: colors.coral,
+      fontWeight: "900",
+    },
+
+    detailRow: {
+      borderBottomWidth: 1,
+      borderBottomColor: colors.border,
+      paddingVertical: 10,
+    },
+
+    detailRowLast: {
+      paddingVertical: 10,
+    },
+
+    detailLabel: {
+      fontSize: 12,
+      fontWeight: "800",
+      color: colors.mutedText,
+      marginBottom: 3,
+      textTransform: "uppercase",
+      letterSpacing: 0.4,
+    },
+
+    detailValue: {
+      fontSize: 15,
+      color: colors.text,
+      lineHeight: 21,
+    },
+
+    detailButtonRow: {
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 8,
+    },
+
+    utilityButton: {
+      flex: 1,
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      paddingVertical: 12,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    utilityButtonText: {
+      color: colors.coral,
+      fontWeight: "900",
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.65)",
+      justifyContent: "center",
+      padding: 20,
+    },
+
+    modalCard: {
+      backgroundColor: colors.card,
+      padding: 20,
+      borderRadius: 22,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 6,
+    },
+
+    modalSubtitle: {
+      fontSize: 15,
+      color: colors.mutedText,
+      marginBottom: 14,
+    },
+
+    input: {
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 14,
+      padding: 12,
+      marginBottom: 12,
+      color: colors.text,
+    },
+
+    messageInput: {
+      height: 90,
+      textAlignVertical: "top",
+    },
+
+    modalPrimaryButton: {
+      backgroundColor: colors.coral,
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: "center",
+      marginBottom: 10,
+    },
+
+    modalPrimaryButtonText: {
+      color: "#fff",
+      fontWeight: "900",
+    },
+
+    cancelButton: {
+      alignItems: "center",
+      paddingVertical: 8,
+      borderRadius: 10,
+    },
+
+    cancelButtonText: {
+      color: colors.mutedText,
+      fontWeight: "700",
+    },
+
+    disabledButton: {
+      opacity: 0.65,
+    },
+
+    loadingContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+    },
+
+    loadingText: {
+      color: colors.mutedText,
+    },
+
+    emptyContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: "center",
+      alignItems: "center",
+      padding: 24,
+    },
+
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    emptyText: {
+      color: colors.mutedText,
+      textAlign: "center",
+    },
+  });
+}

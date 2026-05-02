@@ -11,8 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BidaColors } from "@/constants/bidaTheme";
 import { useAuth } from "@/context/AuthContext";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 import { logOut } from "../../services/authService";
 import {
   getUserProfile,
@@ -23,6 +23,8 @@ import {
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [editingUsername, setEditingUsername] = useState(false);
@@ -123,7 +125,7 @@ export default function ProfileScreen() {
                   value={usernameInput}
                   onChangeText={setUsernameInput}
                   placeholder="Username"
-                  placeholderTextColor={BidaColors.mutedText}
+                  placeholderTextColor={colors.mutedText}
                   autoCapitalize="none"
                   autoCorrect={false}
                 />
@@ -195,156 +197,183 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 36,
-  },
-  hero: {
-    marginBottom: 28,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    color: BidaColors.mutedText,
-    marginBottom: 8,
-  },
-  title: {
-    fontSize: 34,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: BidaColors.mutedText,
-    lineHeight: 24,
-  },
-  card: {
-    backgroundColor: BidaColors.card,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-    marginBottom: 14,
-  },
-  labelRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 6,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: BidaColors.mutedText,
-    marginBottom: 6,
-  },
-  editText: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: BidaColors.coral,
-  },
-  value: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-  },
-  input: {
-    backgroundColor: BidaColors.background,
-    borderWidth: 1.5,
-    borderColor: BidaColors.coral,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    fontWeight: "700",
-    color: BidaColors.text,
-  },
-  usernameHint: {
-    fontSize: 12,
-    color: BidaColors.mutedText,
-    marginTop: 8,
-    lineHeight: 18,
-  },
-  editActions: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 14,
-  },
-  cancelEditButton: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  cancelEditButtonText: {
-    color: BidaColors.mutedText,
-    fontWeight: "800",
-  },
-  saveEditButton: {
-    flex: 1,
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  saveEditButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-  },
-  disabledButton: {
-    opacity: 0.65,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: BidaColors.border,
-    marginVertical: 16,
-  },
-  logoutButton: {
-    backgroundColor: BidaColors.card,
-    borderWidth: 1.5,
-    borderColor: BidaColors.border,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  logoutButtonText: {
-    color: BidaColors.mutedText,
-    fontWeight: "800",
-    fontSize: 16,
-  },
-  loginButton: {
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  loginButtonText: {
-    color: "#fff",
-    fontWeight: "800",
-    fontSize: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BidaColors.mutedText,
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    contentContainer: {
+      paddingHorizontal: 20,
+      paddingBottom: 110,
+    },
+
+    hero: {
+      marginBottom: 28,
+    },
+
+    eyebrow: {
+      fontSize: 12,
+      fontWeight: "800",
+      letterSpacing: 1.4,
+      color: colors.coral,
+      marginBottom: 8,
+    },
+
+    title: {
+      fontSize: 34,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    subtitle: {
+      fontSize: 16,
+      color: colors.mutedText,
+      lineHeight: 24,
+    },
+
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 22,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginBottom: 14,
+    },
+
+    labelRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 6,
+    },
+
+    label: {
+      fontSize: 12,
+      fontWeight: "800",
+      letterSpacing: 0.8,
+      textTransform: "uppercase",
+      color: colors.mutedText,
+      marginBottom: 6,
+    },
+
+    editText: {
+      fontSize: 13,
+      fontWeight: "800",
+      color: colors.coral,
+    },
+
+    value: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: colors.text,
+    },
+
+    input: {
+      backgroundColor: colors.background,
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      borderRadius: 14,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      fontSize: 16,
+      fontWeight: "700",
+      color: colors.text,
+    },
+
+    usernameHint: {
+      fontSize: 12,
+      color: colors.mutedText,
+      marginTop: 8,
+      lineHeight: 18,
+    },
+
+    editActions: {
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 14,
+    },
+
+    cancelEditButton: {
+      flex: 1,
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingVertical: 12,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    cancelEditButtonText: {
+      color: colors.mutedText,
+      fontWeight: "800",
+    },
+
+    saveEditButton: {
+      flex: 1,
+      backgroundColor: colors.coral,
+      paddingVertical: 12,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    saveEditButtonText: {
+      color: "#fff",
+      fontWeight: "800",
+    },
+
+    disabledButton: {
+      opacity: 0.65,
+    },
+
+    divider: {
+      height: 1,
+      backgroundColor: colors.border,
+      marginVertical: 16,
+    },
+
+    logoutButton: {
+      backgroundColor: colors.card,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: "center",
+    },
+
+    logoutButtonText: {
+      color: colors.mutedText,
+      fontWeight: "800",
+      fontSize: 16,
+    },
+
+    loginButton: {
+      backgroundColor: colors.coral,
+      paddingVertical: 14,
+      borderRadius: 14,
+      alignItems: "center",
+      marginTop: 16,
+    },
+
+    loginButtonText: {
+      color: "#fff",
+      fontWeight: "800",
+      fontSize: 16,
+    },
+
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "800",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    emptyText: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.mutedText,
+    },
+  });
+}

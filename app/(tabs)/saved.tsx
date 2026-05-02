@@ -13,30 +13,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { BusinessCard } from "@/components/BusinessCard";
 import { SkeletonCard } from "@/components/SkeletonCard";
-import { BidaColors } from "@/constants/bidaTheme";
 import { useSavedBusinesses } from "@/context/SavedBusinessesContext";
+import { beaches } from "@/data/beaches";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 import { useBusinesses } from "@/hooks/useBusinesses";
-
-const topBeaches = [
-  {
-    id: "beach:micro-beach",
-    name: "Micro Beach",
-    description: "Calm waters, sunsets, and easy access in Garapan.",
-    image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900",
-  },
-  {
-    id: "beach:ladder-beach",
-    name: "Ladder Beach",
-    description: "A quiet beach spot with cliffs and clear water.",
-    image: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=900",
-  },
-  {
-    id: "beach:obyan-beach",
-    name: "Obyan Beach",
-    description: "Popular for snorkeling, sand, and peaceful views.",
-    image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?w=900",
-  },
-];
 
 function openMaps(name: string) {
   const query = encodeURIComponent(`${name} Saipan CNMI`);
@@ -52,6 +32,8 @@ function openMaps(name: string) {
 export default function SavedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
 
   const { businesses, loading } = useBusinesses();
   const {
@@ -64,16 +46,14 @@ export default function SavedScreen() {
     (slug) => !slug.startsWith("beach:"),
   );
 
-  const savedList = businesses.filter((business) =>
+  const savedBusinesses = businesses.filter((business) =>
     savedBusinessSlugs.includes(business.slug),
   );
 
-  const savedBeaches = topBeaches.filter((beach) =>
-    savedSlugs.includes(beach.id),
-  );
+  const savedBeaches = beaches.filter((beach) => savedSlugs.includes(beach.id));
 
   const isLoading = loading || savedLoading;
-  const totalSaved = savedList.length + savedBeaches.length;
+  const totalSaved = savedBusinesses.length + savedBeaches.length;
 
   return (
     <ScrollView
@@ -98,16 +78,18 @@ export default function SavedScreen() {
           <Text style={styles.resultsCaption}>Your personal island list</Text>
         </View>
 
-        {!isLoading && (
+        {!isLoading ? (
           <View style={styles.countPill}>
             <Text style={styles.countPillText}>{totalSaved}</Text>
           </View>
-        )}
+        ) : null}
       </View>
 
       <View style={styles.section}>
         {isLoading ? (
-          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonCard key={index} />
+          ))
         ) : totalSaved > 0 ? (
           <>
             {savedBeaches.length > 0 ? (
@@ -117,8 +99,11 @@ export default function SavedScreen() {
                 {savedBeaches.map((beach) => (
                   <Pressable
                     key={beach.id}
-                    style={styles.beachCard}
-                    onPress={() => openMaps(beach.name)}
+                    style={({ pressed }) => [
+                      styles.beachCard,
+                      pressed && styles.pressedCard,
+                    ]}
+                    onPress={() => router.push(`/beach/${beach.slug}` as any)}
                   >
                     <Image
                       source={{ uri: beach.image }}
@@ -132,29 +117,47 @@ export default function SavedScreen() {
                     <View style={styles.beachText}>
                       <Text style={styles.beachName}>{beach.name}</Text>
                       <Text style={styles.beachDescription}>
-                        {beach.description}
+                        {beach.shortDescription}
                       </Text>
 
-                      <Pressable
-                        style={styles.removeButton}
-                        onPress={(event) => {
-                          event.stopPropagation();
-                          toggleSaved(beach.id);
-                        }}
-                      >
-                        <Text style={styles.removeButtonText}>Remove</Text>
-                      </Pressable>
+                      <View style={styles.beachActions}>
+                        <Pressable
+                          style={({ pressed }) => [
+                            styles.mapButton,
+                            pressed && styles.pressedButton,
+                          ]}
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            openMaps(beach.name);
+                          }}
+                        >
+                          <Text style={styles.mapButtonText}>Directions</Text>
+                        </Pressable>
+
+                        <Pressable
+                          style={({ pressed }) => [
+                            styles.removeButton,
+                            pressed && styles.pressedButton,
+                          ]}
+                          onPress={(event) => {
+                            event.stopPropagation();
+                            toggleSaved(beach.id);
+                          }}
+                        >
+                          <Text style={styles.removeButtonText}>Remove</Text>
+                        </Pressable>
+                      </View>
                     </View>
                   </Pressable>
                 ))}
               </View>
             ) : null}
 
-            {savedList.length > 0 ? (
+            {savedBusinesses.length > 0 ? (
               <View style={styles.group}>
                 <Text style={styles.groupTitle}>Businesses</Text>
 
-                {savedList.map((business) => (
+                {savedBusinesses.map((business) => (
                   <View key={business.slug} style={styles.savedWrapper}>
                     <View style={styles.savedBadge}>
                       <Text style={styles.savedBadgeText}>Saved</Text>
@@ -188,157 +191,216 @@ export default function SavedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  contentContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 36,
-  },
-  hero: {
-    marginBottom: 22,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    color: BidaColors.mutedText,
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: BidaColors.mutedText,
-    lineHeight: 24,
-  },
-  resultsHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  resultsTitle: {
-    fontSize: 22,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-  },
-  resultsCaption: {
-    fontSize: 13,
-    color: BidaColors.mutedText,
-    marginTop: 2,
-  },
-  countPill: {
-    backgroundColor: BidaColors.card,
-    borderWidth: 1,
-    borderColor: BidaColors.coral,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  countPillText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: BidaColors.text,
-  },
-  section: {
-    marginBottom: 18,
-  },
-  group: {
-    marginBottom: 20,
-  },
-  groupTitle: {
-    fontSize: 18,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 10,
-  },
-  savedWrapper: {
-    position: "relative",
-    marginBottom: 12,
-  },
-  savedCard: {
-    borderColor: BidaColors.leaf,
-    borderWidth: 1.5,
-    borderRadius: 18,
-  },
-  beachCard: {
-    backgroundColor: BidaColors.card,
-    borderRadius: 18,
-    overflow: "hidden",
-    borderWidth: 1.5,
-    borderColor: BidaColors.leaf,
-    marginBottom: 14,
-  },
-  beachImage: {
-    width: "100%",
-    height: 180,
-  },
-  beachText: {
-    padding: 16,
-  },
-  beachName: {
-    fontSize: 20,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 4,
-  },
-  beachDescription: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BidaColors.mutedText,
-  },
-  savedBadge: {
-    position: "absolute",
-    top: 10,
-    right: 12,
-    zIndex: 10,
-    backgroundColor: BidaColors.leaf,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  savedBadgeText: {
-    color: "#fff",
-    fontSize: 11,
-    fontWeight: "800",
-  },
-  removeButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-  },
-  removeButtonText: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: BidaColors.mutedText,
-  },
-  emptyState: {
-    backgroundColor: BidaColors.card,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BidaColors.mutedText,
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+
+    contentContainer: {
+      paddingHorizontal: 20,
+      paddingBottom: 110,
+    },
+
+    hero: {
+      marginBottom: 24,
+    },
+
+    eyebrow: {
+      fontSize: 12,
+      fontWeight: "800",
+      letterSpacing: 1.4,
+      color: colors.coral,
+      marginBottom: 8,
+    },
+
+    title: {
+      fontSize: 34,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    subtitle: {
+      fontSize: 16,
+      color: colors.mutedText,
+      lineHeight: 24,
+    },
+
+    resultsHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      marginBottom: 16,
+    },
+
+    resultsTitle: {
+      fontSize: 22,
+      fontWeight: "900",
+      color: colors.text,
+    },
+
+    resultsCaption: {
+      fontSize: 13,
+      color: colors.mutedText,
+      marginTop: 2,
+    },
+
+    countPill: {
+      backgroundColor: colors.card,
+      borderWidth: 1,
+      borderColor: colors.coral,
+      paddingHorizontal: 11,
+      paddingVertical: 6,
+      borderRadius: 999,
+    },
+
+    countPillText: {
+      fontSize: 12,
+      fontWeight: "900",
+      color: colors.text,
+    },
+
+    section: {
+      marginBottom: 18,
+    },
+
+    group: {
+      marginBottom: 22,
+    },
+
+    groupTitle: {
+      fontSize: 18,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 10,
+    },
+
+    savedWrapper: {
+      position: "relative",
+      marginBottom: 12,
+    },
+
+    savedCard: {
+      borderColor: colors.leaf,
+      borderWidth: 1.5,
+      borderRadius: 22,
+    },
+
+    beachCard: {
+      backgroundColor: colors.card,
+      borderRadius: 22,
+      overflow: "hidden",
+      borderWidth: 1.5,
+      borderColor: colors.leaf,
+      marginBottom: 14,
+    },
+
+    pressedCard: {
+      opacity: 0.88,
+      transform: [{ scale: 0.99 }],
+    },
+
+    beachImage: {
+      width: "100%",
+      height: 180,
+      backgroundColor: colors.background,
+    },
+
+    beachText: {
+      padding: 16,
+    },
+
+    beachName: {
+      fontSize: 20,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 4,
+    },
+
+    beachDescription: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.mutedText,
+    },
+
+    beachActions: {
+      flexDirection: "row",
+      gap: 8,
+      marginTop: 12,
+    },
+
+    savedBadge: {
+      position: "absolute",
+      top: 10,
+      right: 12,
+      zIndex: 10,
+      backgroundColor: colors.leaf,
+      paddingHorizontal: 9,
+      paddingVertical: 5,
+      borderRadius: 999,
+    },
+
+    savedBadgeText: {
+      color: "#fff",
+      fontSize: 11,
+      fontWeight: "900",
+    },
+
+    mapButton: {
+      borderWidth: 1.5,
+      borderColor: colors.coral,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      backgroundColor: colors.background,
+    },
+
+    mapButtonText: {
+      fontSize: 12,
+      fontWeight: "900",
+      color: colors.coral,
+    },
+
+    removeButton: {
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 999,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      backgroundColor: colors.background,
+    },
+
+    removeButtonText: {
+      fontSize: 12,
+      fontWeight: "900",
+      color: colors.mutedText,
+    },
+
+    pressedButton: {
+      opacity: 0.75,
+    },
+
+    emptyState: {
+      backgroundColor: colors.card,
+      borderRadius: 22,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: "900",
+      color: colors.text,
+      marginBottom: 8,
+    },
+
+    emptyText: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.mutedText,
+    },
+  });
+}

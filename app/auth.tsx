@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -11,116 +11,91 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BidaColors } from "@/constants/bidaTheme";
-import { useAuth } from "@/context/AuthContext";
-import { logIn, signUp } from "../services/authService";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
+import { logIn, signUp } from "@/services/authService";
 
 export default function AuthScreen() {
-  const { user, loading } = useAuth();
+  const insets = useSafeAreaInsets();
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
 
-  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  useEffect(() => {
-    if (user) {
-      router.replace("/");
-    }
-  }, [user]);
-
-  if (loading) return null;
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   async function handleSubmit() {
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
 
-    if (!cleanEmail || !password) {
-      Alert.alert("Missing info", "Please enter both email and password.");
+    if (!cleanEmail || !cleanPassword) {
+      Alert.alert("Missing info", "Please enter your email and password.");
+      return;
+    }
+
+    if (!isLogin && cleanPassword !== confirmPassword.trim()) {
+      Alert.alert("Passwords do not match", "Please re-enter your password.");
       return;
     }
 
     try {
-      if (isLoginMode) {
-        await logIn(cleanEmail, password);
+      setSubmitting(true);
+
+      if (isLogin) {
+        await logIn(cleanEmail, cleanPassword);
       } else {
-        await signUp(cleanEmail, password);
+        await signUp(cleanEmail, cleanPassword);
       }
 
-      router.replace("/");
-    } catch (error: any) {
-      Alert.alert("Auth Error", error.message || "Something went wrong.");
+      router.back();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong.";
+      Alert.alert(isLogin ? "Login failed" : "Sign up failed", message);
+    } finally {
+      setSubmitting(false);
     }
   }
 
   return (
     <KeyboardAvoidingView
-      style={styles.keyboardView}
+      style={styles.keyboardContainer}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <ScrollView
         style={styles.container}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: insets.top + 18 },
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.hero}>
-          <Text style={styles.eyebrow}>BIDA ACCOUNT</Text>
-
-          <Text style={styles.title}>
-            {isLoginMode ? "Welcome back" : "Join Bida"}
+          <Text style={styles.eyebrow}>
+            {isLogin ? "WELCOME BACK" : "JOIN BIDA"}
           </Text>
-
+          <Text style={styles.title}>
+            {isLogin ? "Log In" : "Create Account"}
+          </Text>
           <Text style={styles.subtitle}>
-            {isLoginMode
-              ? "Log in to save places and receive island recommendations."
-              : "Create an account to save local spots and share recommendations."}
+            {isLogin
+              ? "Access your saved places, recommendations, and island picks."
+              : "Create an account to save places and send recommendations."}
           </Text>
         </View>
 
         <View style={styles.card}>
-          {/* Toggle */}
-          <View style={styles.modeRow}>
-            <Pressable
-              style={[
-                styles.modeButton,
-                isLoginMode && styles.activeModeButton,
-              ]}
-              onPress={() => setIsLoginMode(true)}
-            >
-              <Text
-                style={[
-                  styles.modeButtonText,
-                  isLoginMode && styles.activeModeButtonText,
-                ]}
-              >
-                Log In
-              </Text>
-            </Pressable>
-
-            <Pressable
-              style={[
-                styles.modeButton,
-                !isLoginMode && styles.activeModeButton,
-              ]}
-              onPress={() => setIsLoginMode(false)}
-            >
-              <Text
-                style={[
-                  styles.modeButtonText,
-                  !isLoginMode && styles.activeModeButtonText,
-                ]}
-              >
-                Sign Up
-              </Text>
-            </Pressable>
-          </View>
-
           <Text style={styles.label}>Email</Text>
           <TextInput
             style={styles.input}
-            placeholder="you@example.com"
-            placeholderTextColor={BidaColors.mutedText}
+            placeholder="Enter your email"
+            placeholderTextColor={colors.mutedText}
             autoCapitalize="none"
+            autoCorrect={false}
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
@@ -129,147 +104,146 @@ export default function AuthScreen() {
           <Text style={styles.label}>Password</Text>
           <TextInput
             style={styles.input}
-            placeholder="At least 6 characters"
-            placeholderTextColor={BidaColors.mutedText}
+            placeholder="Enter your password"
+            placeholderTextColor={colors.mutedText}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
           />
 
-          {/* Coral button */}
-          <Pressable style={styles.primaryButton} onPress={handleSubmit}>
+          {!isLogin ? (
+            <>
+              <Text style={styles.label}>Confirm Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Re-enter your password"
+                placeholderTextColor={colors.mutedText}
+                secureTextEntry
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+              />
+            </>
+          ) : null}
+
+          <Pressable
+            style={[styles.primaryButton, submitting && styles.disabledButton]}
+            onPress={handleSubmit}
+            disabled={submitting}
+          >
             <Text style={styles.primaryButtonText}>
-              {isLoginMode ? "Log In" : "Create Account"}
+              {submitting
+                ? isLogin
+                  ? "Logging In..."
+                  : "Creating Account..."
+                : isLogin
+                  ? "Log In"
+                  : "Create Account"}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() => setIsLogin((current) => !current)}
+            disabled={submitting}
+          >
+            <Text style={styles.secondaryButtonText}>
+              {isLogin
+                ? "Don't have an account? Sign Up"
+                : "Already have an account? Log In"}
             </Text>
           </Pressable>
         </View>
-
-        <Pressable style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Go back</Text>
-        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
-const styles = StyleSheet.create({
-  keyboardView: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  container: {
-    flex: 1,
-    backgroundColor: BidaColors.background,
-  },
-  contentContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 92,
-    paddingBottom: 32,
-  },
-
-  hero: {
-    marginBottom: 26,
-  },
-  eyebrow: {
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 1.2,
-    color: BidaColors.mutedText,
-    marginBottom: 6,
-  },
-  title: {
-    fontSize: 38,
-    fontWeight: "900",
-    color: BidaColors.ocean,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: BidaColors.mutedText,
-  },
-
-  card: {
-    backgroundColor: BidaColors.card,
-    borderRadius: 18,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-
-  modeRow: {
-    flexDirection: "row",
-    backgroundColor: BidaColors.background,
-    borderRadius: 16,
-    padding: 5,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  modeButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderRadius: 12,
-  },
-
-  // ocean-light toggle
-  activeModeButton: {
-    backgroundColor: BidaColors.oceanLight,
-    borderWidth: 1,
-    borderColor: BidaColors.ocean,
-  },
-
-  modeButtonText: {
-    fontSize: 15,
-    fontWeight: "800",
-    color: BidaColors.mutedText,
-  },
-  activeModeButtonText: {
-    color: BidaColors.ocean,
-  },
-
-  label: {
-    fontSize: 12,
-    fontWeight: "800",
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    color: BidaColors.mutedText,
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: BidaColors.background,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    fontSize: 16,
-    color: BidaColors.text,
-    marginBottom: 14,
-  },
-
-  primaryButton: {
-    backgroundColor: BidaColors.coral,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    marginTop: 4,
-  },
-  primaryButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-
-  backButton: {
-    alignItems: "center",
-    marginTop: 22,
-  },
-  backButtonText: {
-    color: BidaColors.mutedText,
-    fontSize: 15,
-    fontWeight: "700",
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    keyboardContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    contentContainer: {
+      paddingHorizontal: 20,
+      paddingBottom: 36,
+    },
+    hero: {
+      marginBottom: 28,
+    },
+    eyebrow: {
+      fontSize: 12,
+      fontWeight: "700",
+      letterSpacing: 1.2,
+      color: colors.mutedText,
+      marginBottom: 8,
+    },
+    title: {
+      fontSize: 34,
+      fontWeight: "900",
+      color: colors.ocean,
+      marginBottom: 8,
+    },
+    subtitle: {
+      fontSize: 16,
+      color: colors.mutedText,
+      lineHeight: 24,
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 18,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    label: {
+      fontSize: 12,
+      fontWeight: "800",
+      letterSpacing: 0.8,
+      textTransform: "uppercase",
+      color: colors.mutedText,
+      marginBottom: 6,
+      marginTop: 4,
+    },
+    input: {
+      backgroundColor: colors.background,
+      borderWidth: 1,
+      borderColor: colors.border,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+      fontSize: 16,
+      color: colors.text,
+      marginBottom: 14,
+    },
+    primaryButton: {
+      backgroundColor: colors.coral,
+      paddingVertical: 14,
+      borderRadius: 12,
+      alignItems: "center",
+      marginTop: 4,
+    },
+    primaryButtonText: {
+      color: "#fff",
+      fontSize: 16,
+      fontWeight: "800",
+    },
+    secondaryButton: {
+      alignItems: "center",
+      paddingVertical: 14,
+      marginTop: 8,
+    },
+    secondaryButtonText: {
+      color: colors.ocean,
+      fontSize: 14,
+      fontWeight: "800",
+    },
+    disabledButton: {
+      opacity: 0.65,
+    },
+  });
+}

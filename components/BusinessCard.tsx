@@ -9,7 +9,7 @@ import {
   ViewStyle,
 } from "react-native";
 
-import { BidaColors } from "@/constants/bidaTheme";
+import { useBidaTheme } from "@/hooks/useBidaTheme";
 
 type BusinessCardProps = {
   name: string;
@@ -26,6 +26,9 @@ export function BusinessCard({
   onPress,
   style,
 }: BusinessCardProps) {
+  const colors = useBidaTheme();
+  const styles = createStyles(colors);
+
   const [imageLoaded, setImageLoaded] = useState(false);
 
   const placeholderOpacity = useRef(new Animated.Value(1)).current;
@@ -69,52 +72,66 @@ export function BusinessCard({
         </View>
 
         <View style={styles.textContainer}>
-          <Text style={styles.name}>{name}</Text>
-          <Text style={styles.description}>{description}</Text>
+          <Text style={styles.name} numberOfLines={1}>
+            {name}
+          </Text>
+
+          <Text style={styles.description} numberOfLines={2}>
+            {description}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: BidaColors.card,
-    borderRadius: 16,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: BidaColors.border,
-  },
-  inner: {
-    overflow: "hidden",
-    borderRadius: 16,
-  },
-  imageWrapper: {
-    width: "100%",
-    height: 170,
-    overflow: "hidden",
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-  },
-  placeholder: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: BidaColors.card,
-  },
-  image: {
-    width: "100%",
-    height: 170,
-  },
-  textContainer: {
-    padding: 14,
-  },
-  name: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: BidaColors.text,
-    marginBottom: 4,
-  },
-  description: {
-    fontSize: 14,
-    color: BidaColors.mutedText,
-  },
-});
+function createStyles(colors: ReturnType<typeof useBidaTheme>) {
+  return StyleSheet.create({
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: 18,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: colors.border,
+      shadowColor: "#000",
+      shadowOpacity: 0.08,
+      shadowRadius: 10,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 2,
+    },
+    inner: {
+      overflow: "hidden",
+      borderRadius: 18,
+    },
+    imageWrapper: {
+      width: "100%",
+      height: 170,
+      overflow: "hidden",
+      borderTopLeftRadius: 18,
+      borderTopRightRadius: 18,
+      backgroundColor: colors.oceanLight,
+    },
+    placeholder: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: colors.oceanLight,
+    },
+    image: {
+      width: "100%",
+      height: 170,
+    },
+    textContainer: {
+      padding: 14,
+    },
+    name: {
+      fontSize: 17,
+      fontWeight: "800",
+      color: colors.text,
+      marginBottom: 6,
+    },
+    description: {
+      fontSize: 14,
+      lineHeight: 20,
+      color: colors.mutedText,
+    },
+  });
+}
